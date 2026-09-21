@@ -97,7 +97,7 @@ export default function BiasDetection() {
   const [elapsed, setElapsed] = useState(null);
 
   const buildPrompt = () =>
-    `Contexto / Context:\n"${context}"\n\nInstrucción / Instruction:\n"${instruction}"\n\n${t.analysisInstruction}`;
+    `Context:\n"${context}"\n\nInstruction:\n"${instruction}"\n\n${t.analysisInstruction}`;
 
   const loadExample = (ex) => {
     setContext(ex.text);

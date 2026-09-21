@@ -6,7 +6,7 @@ export default function SourceInput({ index, value, onChange, onRemove, canRemov
     <div className="relative group">
       <div className="flex items-center justify-between mb-1.5">
         <label className="text-xs font-mono text-muted-foreground">
-          Fuente #{index + 1}
+          Source #{index + 1}
         </label>
         {canRemove && (
           <button
@@ -20,7 +20,7 @@ export default function SourceInput({ index, value, onChange, onRemove, canRemov
       <Textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={`Pega aquí el contenido de la fuente ${index + 1}...`}
+        placeholder={`Paste the content of source ${index + 1} here...`}
         className="min-h-[120px] bg-secondary/50 border-border font-mono text-sm resize-y"
       />
     </div>

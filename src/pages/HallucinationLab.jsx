@@ -93,7 +93,7 @@ export default function HallucinationLab() {
   const [elapsed, setElapsed] = useState(null);
 
   const buildPrompt = () =>
-    `${query}\n\nIMPORTANTE: Proporciona información específica y detallada. Si incluyes enlaces, deben ser URLs completas y reales. Si no tienes la información exacta, de todas formas intenta darme los datos lo más precisos posible.`;
+    `${query}\n\nIMPORTANT: Provide specific and detailed information. If you include links, they must be complete and real URLs. If you don't have the exact information, still try to give me the most precise data possible.`;
 
   const run = async () => {
     setIsLoading(true);

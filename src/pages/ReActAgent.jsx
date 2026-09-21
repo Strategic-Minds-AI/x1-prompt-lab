@@ -171,7 +171,7 @@ export default function ReActAgent() {
               </SelectContent>
             </Select>
           </div>
-          <PromptPreview buildPrompt={() => buildDecisionPrompt(task || "[tu tarea / your task]", "(historial de pasos prevíos / previous steps history)")} label={lang === "es" ? "Ver prompt de decisión" : "View decision prompt"} />
+          <PromptPreview buildPrompt={() => buildDecisionPrompt(task || "[your task]", "(previous steps history)")} label="View decision prompt" />
           <Button onClick={handleRun} disabled={!task.trim() || isLoading} className="w-full gap-2">
             <Play className="w-4 h-4" /> {isLoading ? t.running : t.run}
           </Button>

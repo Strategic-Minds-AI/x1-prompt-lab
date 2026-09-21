@@ -14,7 +14,7 @@ export default function PromptPreview({ buildPrompt, label }) {
       >
         <div className="flex items-center gap-2 text-muted-foreground">
           <Code2 className="w-3.5 h-3.5 text-primary" />
-          <span>{label || "Ver prompt de InvokeLLM"}</span>
+          <span>{label || "View InvokeLLM prompt"}</span>
         </div>
         {open ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
       </button>

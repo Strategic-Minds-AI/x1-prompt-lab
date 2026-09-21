@@ -60,7 +60,7 @@ export default function WebScraper() {
   const buildPrompt = () => {
     const selected = analysisTypes[lang].find(tp => tp.value === analysisType);
     const instruction = analysisType === "custom" ? customInstruction : selected.prompt;
-    return `URL a analizar: ${url}\n\n${instruction}`;
+    return `URL to analyze: ${url}\n\n${instruction}`;
   };
 
   const handleRun = async () => {

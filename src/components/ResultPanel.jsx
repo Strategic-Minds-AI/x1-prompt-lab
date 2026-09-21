@@ -19,7 +19,7 @@ export default function ResultPanel({ result, isLoading, elapsed }) {
           <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
           <div className="absolute inset-0 w-10 h-10 border-2 border-accent/10 border-b-accent rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
         </div>
-        <p className="text-sm text-muted-foreground">Procesando con LLM...</p>
+        <p className="text-sm text-muted-foreground">Processing with LLM...</p>
       </div>
     );
   }
@@ -27,7 +27,7 @@ export default function ResultPanel({ result, isLoading, elapsed }) {
   if (!result) {
     return (
       <div className="border border-dashed border-border rounded-lg bg-card/50 p-8 flex items-center justify-center min-h-[200px]">
-        <p className="text-sm text-muted-foreground">Los resultados aparecerán aquí</p>
+        <p className="text-sm text-muted-foreground">Results will appear here</p>
       </div>
     );
   }
@@ -40,7 +40,7 @@ export default function ResultPanel({ result, isLoading, elapsed }) {
       <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-secondary/30">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-success" />
-          <span className="text-xs font-mono text-muted-foreground">Resultado</span>
+          <span className="text-xs font-mono text-muted-foreground">Result</span>
         </div>
         <div className="flex items-center gap-3">
           {elapsed && (

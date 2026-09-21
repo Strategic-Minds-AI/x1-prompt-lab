@@ -122,8 +122,8 @@ export default function OverconfidenceLab() {
 
   const buildPrompt = (restricted = true) =>
     restricted
-      ? `Información disponible:\n"${context}"\n\nInstrucción:\n"${instruction}"\n\nIMPORTANTE: Responde basándote ÚNICAMENTE en la información proporcionada arriba. No uses conocimiento externo.`
-      : `Información disponible:\n"${context}"\n\nInstrucción:\n"${instruction}"`;
+      ? `Available information:\n"${context}"\n\nInstruction:\n"${instruction}"\n\nIMPORTANT: Answer based ONLY on the information provided above. Do not use external knowledge.`
+      : `Available information:\n"${context}"\n\nInstruction:\n"${instruction}"`;
 
   const loadExample = (ex) => {
     setContext(ex.context);

@@ -76,7 +76,7 @@ const ui = {
 };
 
 export default function ChainPrompting() {
-  const [steps, setSteps] = useState([{ label: "Paso 1", prompt: "" }, { label: "Paso 2", prompt: "" }]);
+  const [steps, setSteps] = useState([{ label: "Step 1", prompt: "" }, { label: "Step 2", prompt: "" }]);
   const [initialInput, setInitialInput] = useState("");
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -155,7 +155,7 @@ export default function ChainPrompting() {
               </div>
             ))}
           </div>
-          <PromptPreview buildPrompt={() => steps.map((step, i) => `--- ${step.label} ---\n${step.prompt.replace("{{previous}}", i === 0 ? initialInput : "[output anterior]")}`).join("\n\n")} label={lang === "es" ? "Ver prompts de InvokeLLM" : "View InvokeLLM prompts"} />
+          <PromptPreview buildPrompt={() => steps.map((step, i) => `--- ${step.label} ---\n${step.prompt.replace("{{previous}}", i === 0 ? initialInput : "[previous output]")}`).join("\n\n")} label="View InvokeLLM prompts" />
           <div className="flex gap-3">
             <Button variant="outline" onClick={addStep} className="flex-1 gap-2"><Plus className="w-4 h-4" /> {t.addStep}</Button>
             <Button onClick={handleRun} disabled={!canRun || isLoading} className="flex-1 gap-2"><Play className="w-4 h-4" /> {t.run}</Button>
