@@ -1,117 +1,171 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
-  Layers, FileText, Wand2, Link2, Globe, Image, Terminal,
-  ArrowRight, Sparkles, Zap, LinkIcon, FileUp, AlertTriangle, Ghost, TrendingUp, Bot, Target, Library
+  Cpu, Container, HardDrive, Wifi, WifiOff, Activity, Server, Database,
+  Cloud, Sparkles, ArrowRight, Bot, Zap, Terminal as TermIcon, Plug
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import ModelPerformance from "@/components/ModelPerformance";
-
-const tools = [
-  { path: "/chain-prompting", icon: Link2, title: "Chain Prompting", description: "Chain sequential prompts where each output feeds the next.", color: "warning" },
-  { path: "/hallucination-lab", icon: Ghost, title: "Hallucination Lab", description: "Observe how the model invents sources, links and data.", color: "chart-5" },
-  { path: "/overconfidence-lab", icon: TrendingUp, title: "Overconfidence Lab", description: "See how the LLM draws definitive conclusions from minimal info.", color: "chart-2" },
-  { path: "/bias-detection", icon: AlertTriangle, title: "Bias Detection", description: "Observe how words, names or contexts bias responses.", color: "warning" },
-  { path: "/react-agent", icon: Bot, title: "ReAct Agent", description: "An autonomous agent that thinks, searches, and decides.", color: "success" },
-  { path: "/multi-source", icon: Layers, title: "Multi-Source Analysis", description: "Feed multiple texts and get cross-conclusions and synthesis.", color: "primary" },
-  { path: "/structured-extraction", icon: FileText, title: "Structured Extraction", description: "Convert free text into structured JSON with custom schema.", color: "accent" },
-  { path: "/text-transform", icon: Wand2, title: "Text Transformation", description: "Summarize, translate, reformat in different tones.", color: "success" },
-  { path: "/web-enriched", icon: Globe, title: "Web + LLM", description: "Combine internet search with LLM analysis for real-time data.", color: "chart-5" },
-  { path: "/image-analysis", icon: Image, title: "Image Analysis", description: "Upload images for analysis, text and data extraction.", color: "chart-2" },
-  { path: "/web-scraper", icon: LinkIcon, title: "URL Extraction", description: "Paste a link and extract structured information from any page.", color: "chart-5" },
-  { path: "/pdf-extraction", icon: FileUp, title: "PDF Extraction", description: "Upload a PDF and extract summaries, data and key points.", color: "accent" },
-  { path: "/playground", icon: Terminal, title: "Free Playground", description: "Full control over all InvokeLLM parameters.", color: "primary" },
-];
-
-const colorMap = {
-  primary: "bg-primary/10 text-primary border-primary/20",
-  accent: "bg-accent/10 text-accent border-accent/20",
-  success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  warning: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  "chart-5": "bg-rose-500/10 text-rose-400 border-rose-500/20",
-  "chart-2": "bg-violet-500/10 text-violet-400 border-violet-500/20",
-};
-const iconColorMap = {
-  primary: "text-primary", accent: "text-accent", success: "text-emerald-400",
-  warning: "text-amber-400", "chart-5": "text-rose-400", "chart-2": "text-violet-400",
-};
+import { useBridge } from "@/hooks/useBridge";
+import SystemTile from "@/components/control/SystemTile";
+import LiveActivityChart from "@/components/control/LiveActivityChart";
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({ templates: 0, runs: 0 });
+  const { sessionId, online, loading } = useBridge();
+  const [ollama, setOllama] = useState({ status: "loading", models: 0 });
+  const [docker, setDocker] = useState({ status: "loading", containers: 0, running: 0 });
+  const [disk, setDisk] = useState({ status: "loading", total: "", used: "", pcent: "" });
+  const [activity, setActivity] = useState([]);
+  const [counts, setCounts] = useState({ commands: 0, templates: 0, runs: 0 });
+
+  const runShell = useCallback(async (command) => {
+    if (!sessionId || !online) return null;
+    const cmdId = await base44.functions.invoke("bridgeCommand", { session_id: sessionId, type: "shell", command });
+    let attempts = 0;
+    while (attempts < 30) {
+      await new Promise((r) => setTimeout(r, 1000));
+      const { items } = await base44.entities.LocalCommand.filter({ id: cmdId.data?.command_id }, { limit: 1 });
+      const c = items[0];
+      if (c && (c.status === "done" || c.status === "failed")) return c;
+      attempts++;
+    }
+    return null;
+  }, [sessionId, online]);
+
+  const probe = useCallback(async () => {
+    if (!online) {
+      setOllama({ status: "offline", models: 0 });
+      setDocker({ status: "offline", containers: 0, running: 0 });
+      setDisk({ status: "offline", total: "", used: "", pcent: "" });
+      return;
+    }
+    try {
+      const r = await base44.functions.invoke("bridgeProxy", { session_id: sessionId, url: "http://localhost:11434/api/tags", method: "GET" });
+      if (r.data && !r.data.error && r.data.status && r.data.status < 400) {
+        const data = JSON.parse(r.data.body || "{}");
+        setOllama({ status: "online", models: (data.models || []).length });
+      } else setOllama({ status: "offline", models: 0 });
+    } catch { setOllama({ status: "offline", models: 0 }); }
+
+    try {
+      const c = await runShell("docker ps -a --format '{{.Names}}\t{{.Status}}'");
+      if (c && c.status === "done") {
+        const lines = (c.output || "").split("\n").filter(Boolean);
+        const running = lines.filter((l) => l.includes("Up")).length;
+        setDocker({ status: "online", containers: lines.length, running });
+      } else setDocker({ status: "offline", containers: 0, running: 0 });
+    } catch { setDocker({ status: "offline", containers: 0, running: 0 }); }
+
+    try {
+      const c = await runShell("df -h / --output size,used,pcent 2>/dev/null | tail -1");
+      if (c && c.status === "done") {
+        const parts = (c.output || "").trim().split(/\s+/);
+        setDisk({ status: "online", total: parts[0] || "—", used: parts[1] || "—", pcent: parts[2] || "" });
+      } else setDisk({ status: "offline", total: "", used: "", pcent: "" });
+    } catch { setDisk({ status: "offline", total: "", used: "", pcent: "" }); }
+  }, [sessionId, online, runShell]);
+
+  useEffect(() => { probe(); }, [probe]);
+  useEffect(() => {
+    const t = setInterval(probe, 30000);
+    return () => clearInterval(t);
+  }, [probe]);
 
   useEffect(() => {
     (async () => {
       try {
-        const [templates, runs] = await Promise.all([
+        const [cmdAgg, templates, runs] = await Promise.all([
+          base44.entities.LocalCommand.aggregate({ dateBucket: { field: "created_date", unit: "day" }, limit: 14 }),
           base44.entities.PromptTemplate.count(),
           base44.entities.PromptRun.count(),
         ]);
-        setStats({ templates, runs });
-      } catch (e) { /* ignore */ }
+        const rows = (cmdAgg.rows || []).map((r, i) => {
+          const id = r._id;
+          const label = typeof id === "string" ? id.slice(5) : (id?.day?.slice(5) || `d${i}`);
+          return { day: label, count: r.count || 0 };
+        });
+        setActivity(rows);
+        setCounts({ commands: rows.reduce((s, r) => s + r.count, 0), templates, runs });
+      } catch { /* ignore */ }
     })();
   }, []);
 
+  const cloudSystems = [
+    { icon: Cloud, name: "Vercel", status: "managed", value: "Deploy", to: "/connections" },
+    { icon: Database, name: "Supabase", status: "managed", value: "Data", to: "/connections" },
+    { icon: Server, name: "Railway", status: "managed", value: "Runtime", to: "/connections" },
+    { icon: Plug, name: "Google WS", status: "managed", value: "Inbox", to: "/connections" },
+  ];
+
   return (
     <div className="p-6 lg:p-10 max-w-6xl mx-auto">
-      <div className="mb-10">
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-4 h-4 text-primary animate-pulse-glow" />
-          <span className="text-xs font-mono text-primary uppercase tracking-widest">Prompt Engineering System</span>
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-1">
+        <Activity className="w-5 h-5 text-primary animate-pulse-glow" />
+        <h1 className="text-2xl font-bold">Control Plane</h1>
+        <span className={`ml-auto flex items-center gap-1.5 text-xs font-mono ${online ? "text-success" : "text-muted-foreground"}`}>
+          {online ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />} {online ? "bridge online" : loading ? "checking…" : "bridge offline"}
+        </span>
+      </div>
+      <p className="text-sm text-muted-foreground mb-6">Live monitor and control for your local machine, Ollama, Docker, and cloud systems.</p>
+
+      {/* Local system tiles */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <SystemTile icon={Wifi} name="Local Bridge" status={online ? "online" : "offline"} value={online ? "Online" : "Offline"} sub={sessionId ? sessionId.slice(0, 8) + "…" : "no session"} to="/terminal" />
+        <SystemTile icon={Cpu} name="Ollama" status={ollama.status} value={ollama.status === "online" ? `${ollama.models} models` : "Offline"} sub="local LLM runtime" to="/ollama" />
+        <SystemTile icon={Container} name="Docker" status={docker.status} value={docker.status === "online" ? `${docker.running}/${docker.containers}` : "Offline"} sub="running containers" to="/terminal" />
+        <SystemTile icon={HardDrive} name="Local Disk" status={disk.status} value={disk.status === "online" ? disk.pcent || "—" : "Offline"} sub={disk.status === "online" ? `${disk.used} / ${disk.total}` : "filesystem"} to="/terminal" />
+      </div>
+
+      {/* Chart + cloud systems */}
+      <div className="grid lg:grid-cols-3 gap-4 mb-6">
+        <div className="lg:col-span-2"><LiveActivityChart data={activity} /></div>
+        <div className="p-4 rounded-xl bg-card border border-border">
+          <div className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-3">Cloud Systems</div>
+          <div className="space-y-2">
+            {cloudSystems.map((s) => (
+              <Link key={s.name} to={s.to} className="flex items-center gap-3 p-2.5 rounded-lg border border-border hover:border-primary/30 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <s.icon className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-medium">{s.name}</div>
+                  <div className="text-xs text-muted-foreground">{s.value}</div>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+              </Link>
+            ))}
+          </div>
         </div>
-        <h1 className="text-3xl lg:text-4xl font-bold mb-3">Turn anyone into a prompt engineer.</h1>
-        <p className="text-muted-foreground max-w-2xl text-base leading-relaxed">
-          A deterministic system to construct, audit, enhance, evolve, simulate, and score prompts — and to reverse-engineer the best prompts from any goal.
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-        <Link to="/prompt-studio" className="group p-6 rounded-xl bg-card border border-border hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
-          <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
-            <Sparkles className="w-5 h-5 text-primary" />
-          </div>
-          <h2 className="font-semibold text-lg mb-1.5 flex items-center gap-2">Optimize a Prompt <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" /></h2>
-          <p className="text-sm text-muted-foreground">Audit failure points, hallucination and overconfidence risk, then enhance, simulate, and score any prompt.</p>
-        </Link>
-        <Link to="/prompt-studio?mode=goal" className="group p-6 rounded-xl bg-card border border-border hover:border-accent/40 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
-          <div className="w-11 h-11 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-4">
-            <Target className="w-5 h-5 text-accent" />
-          </div>
-          <h2 className="font-semibold text-lg mb-1.5 flex items-center gap-2">Goal Mode <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" /></h2>
-          <p className="text-sm text-muted-foreground">State what you want to achieve. The system reverse-engineers the best prompts and chains to reach it.</p>
-        </Link>
-      </div>
-
-      <div className="flex items-center gap-6 mb-8 p-4 rounded-xl bg-card border border-border">
-        <Link to="/prompt-library" className="flex items-center gap-2 hover:text-primary transition-colors">
-          <Library className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium">{stats.templates} templates in library</span>
-        </Link>
+      {/* Stats strip */}
+      <div className="flex flex-wrap items-center gap-6 mb-6 p-4 rounded-xl bg-card border border-border">
+        <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-accent" /><span className="text-sm"><b>{counts.commands}</b> bridge commands</span></div>
         <div className="w-px h-5 bg-border" />
-        <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4 text-accent" />
-          <span className="text-sm text-muted-foreground">{stats.runs} engineering runs</span>
+        <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /><span className="text-sm"><b>{counts.templates}</b> prompt templates</span></div>
+        <div className="w-px h-5 bg-border" />
+        <div className="flex items-center gap-2"><Activity className="w-4 h-4 text-success" /><span className="text-sm"><b>{counts.runs}</b> engineering runs</span></div>
+      </div>
+
+      {/* Quick controls */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <Link to="/ollama" className="flex items-center gap-2 p-3 rounded-lg bg-card border border-border hover:border-primary/30 text-sm"><Cpu className="w-4 h-4 text-primary" /> Ollama</Link>
+        <Link to="/terminal" className="flex items-center gap-2 p-3 rounded-lg bg-card border border-border hover:border-primary/30 text-sm"><TermIcon className="w-4 h-4 text-primary" /> Terminal</Link>
+        <Link to="/prompt-studio" className="flex items-center gap-2 p-3 rounded-lg bg-card border border border-border hover:border-primary/30 text-sm"><Sparkles className="w-4 h-4 text-primary" /> Prompt Studio</Link>
+        <Link to="/connections" className="flex items-center gap-2 p-3 rounded-lg bg-card border border border-border hover:border-primary/30 text-sm"><Plug className="w-4 h-4 text-primary" /> Connections</Link>
+      </div>
+
+      {/* Proactive agent strip */}
+      <Link to="/react-agent" className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 hover:border-primary/40 transition-colors">
+        <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center">
+          <Bot className="w-5 h-5 text-primary" />
         </div>
-      </div>
-
-      <ModelPerformance />
-
-      <div className="mb-4">
-        <h2 className="text-sm font-mono text-muted-foreground uppercase tracking-widest mb-1">Tools</h2>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {tools.map((ex) => (
-          <Link key={ex.path} to={ex.path} className="group p-5 rounded-xl bg-card border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
-            <div className="flex items-start justify-between mb-4">
-              <div className={`w-10 h-10 rounded-xl ${colorMap[ex.color]} border flex items-center justify-center`}>
-                <ex.icon className={`w-5 h-5 ${iconColorMap[ex.color]}`} />
-              </div>
-              <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-            </div>
-            <h3 className="font-semibold mb-1.5 text-sm">{ex.title}</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">{ex.description}</p>
-          </Link>
-        ))}
-      </div>
+        <div className="flex-1">
+          <div className="text-sm font-semibold">Autonomous Agent</div>
+          <div className="text-xs text-muted-foreground">Proactive monitoring and self-operating control — coming online as agents are wired to the plane.</div>
+        </div>
+        <ArrowRight className="w-4 h-4 text-primary" />
+      </Link>
     </div>
   );
 }
