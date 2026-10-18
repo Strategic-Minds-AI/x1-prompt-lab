@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Terminal as TermIcon, Download, Copy, Loader2, Wifi, WifiOff, Plus, CornerDownLeft } from "lucide-react";
 import { useBridge } from "@/hooks/useBridge";
 import { base44 } from "@/api/base44Client";
@@ -41,8 +41,8 @@ export default function Terminal() {
         attempts++;
       }
       if (!done) setHistory((h) => h.map((e, i) => (i === h.length - 1 ? { ...e, output: "timeout", status: "failed" } : e)));
-    } catch (e) {
-      setHistory((h) => h.map((e, i) => (i === h.length - 1 ? { ...e, output: String(e), status: "failed" } : e)));
+    } catch (error) {
+      setHistory((h) => h.map((entry, i) => (i === h.length - 1 ? { ...entry, output: String(error), status: "failed" } : entry)));
     }
     setBusy(false);
   };
@@ -56,7 +56,8 @@ export default function Terminal() {
           {online ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />} {online ? "bridge online" : "bridge offline"}
         </span>
       </div>
-      <p className="text-sm text-muted-foreground mb-6">Run a small bridge script on your computer to execute shell commands from here.</p>
+      <p className="text-sm text-muted-foreground mb-2">Run the bridge from the folder you want to authorize. Commands are restricted to an allowlist; arbitrary shell execution is disabled.</p>
+      <p className="text-xs text-muted-foreground mb-6">The terminal accepts only allowlisted legacy diagnostics and Ollama model pulls. Use the Dashboard and Ollama pages for the typed controls; unsupported shell commands are rejected.</p>
 
       {!sessionId && !loading && (
         <div className="rounded-xl border border-border bg-card p-5 mb-6">
@@ -92,7 +93,7 @@ export default function Terminal() {
           {history.map((h, i) => (
             <div key={i}>
               <div className="text-emerald-400">$ {h.command}</div>
-              {h.status === "pending" && <div className="text-muted-foreground flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> running…</div>}
+              {h.status === "pending" && <div className="text-muted-foreground flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> runningâ€¦</div>}
               {h.status !== "pending" && <pre className="text-muted-foreground whitespace-pre-wrap break-all">{h.output}</pre>}
             </div>
           ))}
@@ -104,7 +105,7 @@ export default function Terminal() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && run()}
             disabled={!online || busy}
-            placeholder={online ? "type a shell command and press Enter" : "waiting for bridge…"}
+            placeholder={online ? "enter an approved command (arbitrary shell is blocked)" : "waiting for bridgeâ€¦"}
             className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground disabled:opacity-50"
           />
           <CornerDownLeft className="w-3.5 h-3.5 text-muted-foreground" />

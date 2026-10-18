@@ -5,19 +5,19 @@
       {
         "name": "run_local_command",
         "title": "Run local command",
-        "description": "Queue a command for the user's connected local bridge (shell, scan, ingest, or organize). Requires a live bridge session id; returns a command id you poll via check_local_bridge.",
+        "description": "Queue an allowlisted typed operation or root-confined file action for the user's local bridge. Arbitrary shell execution is disabled. Model removal requires explicit confirmation; returns a command id you poll via check_local_bridge.",
         "input_schema": {
           "type": "object",
           "properties": {
             "session_id": { "type": "string", "description": "The local bridge session id" },
-            "type": { "type": "string", "enum": ["shell", "scan", "ingest", "organize", "stat"], "description": "Command type: shell runs a shell command, scan lists a folder, ingest reads a file, organize moves files per args.mapping" },
-            "command": { "type": "string", "description": "Shell command, folder path, or file path" },
-            "args": { "type": "object", "description": "Extra args, e.g. {mapping, root} for organize" }
+            "type": { "type": "string", "enum": ["operation", "shell", "scan", "ingest", "organize"], "description": "Prefer operation for the typed allowlist (docker.list, disk.usage, ollama.pull). Legacy shell requests are accepted only when they exactly match a supported safe operation. Scan, ingest, and organize are confined to the local bridge root." },
+            "command": { "type": "string", "description": "Typed operation ID or a path for scan/ingest; arbitrary shell execution is disabled." },
+            "args": { "type": "object", "description": "Model and explicit confirmation for Ollama operations; mapping/root for organize" }
           },
           "required": ["session_id", "type", "command"]
         },
         "handler": "bridgeCommand",
-        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": false }
+        "annotations": { "read_only_hint": false, "destructive_hint": true, "idempotent_hint": false }
       },
       {
         "name": "check_local_bridge",

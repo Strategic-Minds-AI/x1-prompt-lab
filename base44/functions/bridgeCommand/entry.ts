@@ -1,22 +1,20 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { normalizeLocalCommand } from '../../shared/bridge-contract.js';
 
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+
     const body = await req.json();
-    if (!body.session_id || !body.type || !body.command)
-      return Response.json({ error: 'session_id, type, command required' }, { status: 400 });
-    const created = await base44.entities.LocalCommand.create({
-      session_id: body.session_id,
-      type: body.type,
-      command: body.command,
-      args: body.args || {},
-      status: 'pending',
-    });
-    return Response.json({ command_id: created.id });
+    const normalized = normalizeLocalCommand(body);
+    if (!normalized.ok) return Response.json({ error: normalized.error }, { status: normalized.status || 400 });
+
+    const created = await base44.entities.LocalCommand.create(normalized.command);
+    return Response.json({ command_id: created.id, type: normalized.command.type, operation: normalized.command.command || null });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Unable to queue local command' }, { status: 500 });
   }
 }

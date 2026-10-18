@@ -42,7 +42,13 @@ export default function Discovery() {
     setBusy("route");
     setMapping(null);
     try {
-      const res = await base44.functions.invoke("bridgeRoute", { files });
+      const candidates = files.filter((file) => file.type === "file");
+      if (!candidates.length) {
+        setLog("No regular files are available to classify inside the authorized root.");
+        setBusy(null);
+        return;
+      }
+      const res = await base44.functions.invoke("bridgeRoute", { files: candidates });
       setMapping(res.data || {});
     } catch (e) { setLog(String(e)); }
     setBusy(null);
@@ -71,7 +77,8 @@ export default function Discovery() {
           {online ? <Check className="w-3.5 h-3.5" /> : <Loader2 className="w-3.5 h-3.5 animate-spin" />} {online ? "bridge online" : "bridge offline"}
         </span>
       </div>
-      <p className="text-sm text-muted-foreground mb-6">Scan a local folder, let the intelligent router classify every file, then auto-organize them into the right subfolders.</p>
+      <p className="text-sm text-muted-foreground mb-2">Scan a folder inside the local bridge's configured root, classify files, and organize them into subfolders.</p>
+      <p className="text-xs text-muted-foreground mb-6">For safety, start the bridge from the parent folder you want to authorize. Absolute paths outside that root and symlink escapes are rejected; organization never overwrites existing files.</p>
 
       {!sessionId && !loading && (
         <button onClick={create} className="mb-6 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium">
@@ -84,7 +91,7 @@ export default function Discovery() {
         <div className="flex gap-2">
           <div className="flex items-center gap-2 flex-1 bg-secondary/40 border border-border rounded-lg px-3">
             <FolderSearch className="w-4 h-4 text-muted-foreground" />
-            <input value={folder} onChange={(e) => setFolder(e.target.value)} disabled={!online} placeholder="/Users/me/Downloads or C:\Users\me\Downloads" className="flex-1 bg-transparent outline-none py-2 text-sm font-mono placeholder:text-muted-foreground disabled:opacity-50" />
+            <input value={folder} onChange={(e) => setFolder(e.target.value)} disabled={!online} placeholder="relative path inside the bridge root (e.g. Downloads)" className="flex-1 bg-transparent outline-none py-2 text-sm font-mono placeholder:text-muted-foreground disabled:opacity-50" />
           </div>
           <button onClick={scan} disabled={!online || busy === "scan" || !folder.trim()} className="flex items-center gap-1.5 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50">
             {busy === "scan" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderSearch className="w-4 h-4" />} Scan

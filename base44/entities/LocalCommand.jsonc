@@ -9,21 +9,21 @@
     "type": {
       "type": "string",
       "enum": [
+        "operation",
         "shell",
         "scan",
         "ingest",
         "organize",
-        "stat",
         "proxy"
       ]
     },
     "command": {
       "type": "string",
-      "description": "Shell command, folder path, file path, or local URL for proxy"
+      "description": "Allowlisted typed operation ID, folder/file path for scan or ingest, or local Ollama URL for proxy"
     },
     "args": {
       "type": "object",
-      "description": "Extra args e.g. {mapping, root} for organize, or {method, headers, body} for proxy"
+      "description": "Validated operation arguments (model for Ollama operations), mapping/root for organize, or method/headers/body for local Ollama proxy"
     },
     "status": {
       "type": "string",
@@ -49,5 +49,11 @@
     "session_id",
     "type",
     "command"
-  ]
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
 }
