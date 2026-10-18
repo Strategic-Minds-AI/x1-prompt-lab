@@ -56,6 +56,14 @@
     {
       "function_name": "syncPromptToDrive",
       "description": "Back up a prompt or result to Google Drive"
+    },
+    {
+      "function_name": "githubScan",
+      "description": "Scan connected GitHub repos, summarize activity, and post a proactive digest to the bus"
+    },
+    {
+      "function_name": "gmailMonitor",
+      "description": "Read unread mail from the orchestrator inbox (ai@thevisioncortex.com), summarize and flag important messages"
     }
   ],
   "context_files": [],

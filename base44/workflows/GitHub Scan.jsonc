@@ -1,0 +1,44 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "github_scan",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "scan": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "githubScan"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "GitHub scan",
+            "description": "Scan connected repos + post digest to the agent bus"
+          }
+        }
+      }
+    ]
+  },
+  "name": "GitHub Scan",
+  "description": "Proactive GitHub discovery: scans the connected account's repositories, summarizes recent activity, and posts a digest + next action to the agent bus every 6 hours.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 6,
+      "interval_unit": "hours",
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

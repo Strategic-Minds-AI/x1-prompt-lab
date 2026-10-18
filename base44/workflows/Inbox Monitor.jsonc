@@ -1,0 +1,44 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "inbox_monitor",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "monitor": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "gmailMonitor"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Inbox monitor",
+            "description": "Read unread inbox mail + post digest to the agent bus"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Inbox Monitor",
+  "description": "Proactive inbox watch: reads unread mail from the orchestrator's Gmail (ai@thevisioncortex.com), summarizes and flags important messages, and posts a digest to the agent bus every 30 minutes.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 30,
+      "interval_unit": "minutes",
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}
