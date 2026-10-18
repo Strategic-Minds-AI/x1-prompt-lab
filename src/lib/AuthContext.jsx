@@ -113,12 +113,16 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
-    
-    if (shouldRedirect) {
-      // Use the SDK's logout method which handles token cleanup and redirect
-      base44.auth.logout(window.location.href);
-    } else {
-      // Just remove the token without redirect
+    if (!shouldRedirect) {
+      base44.auth.logout();
+      return;
+    }
+    // Clear the session cookie via the server logout endpoint, then land on the
+    // login page (not back here) so the user actually sees the login screen.
+    try {
+      const loginUrl = `/login?from_url=${encodeURIComponent(window.location.href)}`;
+      base44.auth.logout(loginUrl);
+    } catch (e) {
       base44.auth.logout();
     }
   };
