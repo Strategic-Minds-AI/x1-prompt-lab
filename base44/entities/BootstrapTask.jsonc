@@ -1,0 +1,27 @@
+{
+  "name": "BootstrapTask",
+  "type": "object",
+  "properties": {
+    "phase": {
+      "type": "string",
+      "description": "Roadmap phase grouping"
+    },
+    "title": {
+      "type": "string"
+    },
+    "detail": {
+      "type": "string"
+    },
+    "done": {
+      "type": "boolean",
+      "default": false
+    },
+    "order": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "phase",
+    "title"
+  ]
+}

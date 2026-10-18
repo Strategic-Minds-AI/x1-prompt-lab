@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   Layers, FileText, Wand2, Link2, Globe, Image, Terminal, LayoutDashboard, LinkIcon, FileUp,
-  AlertTriangle, Ghost, TrendingUp, Bot, Sparkles, Library, GitCompare, Target, Plug, Compass, Cpu
+  AlertTriangle, Ghost, TrendingUp, Bot, Sparkles, Library, GitCompare, Target, Plug, Compass, Cpu, Rocket
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import LangToggle from "./LangToggle";
@@ -18,6 +18,7 @@ const navItems = {
     { path: "/connections", icon: Plug, label: "Connections" },
     { path: "/terminal", icon: Terminal, label: "Terminal" },
     { path: "/ollama", icon: Cpu, label: "Ollama" },
+    { path: "/bootstrap", icon: Rocket, label: "Bootstrap" },
     { path: "/discovery", icon: Compass, label: "Discovery" },
     { path: "/model-compare", icon: GitCompare, label: "Comparar Modelos" },
     { path: "/multi-source", icon: Layers, label: "Multi-Fuente" },
@@ -40,6 +41,7 @@ const navItems = {
     { path: "/connections", icon: Plug, label: "Connections" },
     { path: "/terminal", icon: Terminal, label: "Terminal" },
     { path: "/ollama", icon: Cpu, label: "Ollama" },
+    { path: "/bootstrap", icon: Rocket, label: "Bootstrap" },
     { path: "/discovery", icon: Compass, label: "Discovery" },
     { path: "/prompt-studio", icon: Sparkles, label: "Prompt Studio" },
     { path: "/prompt-library", icon: Library, label: "Prompt Library" },
