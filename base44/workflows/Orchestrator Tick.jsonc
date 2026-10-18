@@ -1,0 +1,44 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "orchestrator_tick",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "tick": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "orchestratorTick"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Orchestrator tick",
+            "description": "Audit + advance roadmap"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Orchestrator Tick",
+  "description": "Proactive system orchestrator: audits roadmap + bridge state, decides the next action, and posts a directive to the agent bus every 2 hours.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 2,
+      "interval_unit": "hours",
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

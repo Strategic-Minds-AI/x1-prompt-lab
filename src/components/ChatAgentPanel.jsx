@@ -4,10 +4,10 @@ import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
 
 const SUGGESTIONS = [
-  "Route this task: build a lead-gen site for a plumber in Miami",
-  "Audit my prompt for hallucination risk",
-  "Find the best executive strategy prompt and save a refined version",
-  "Message me on WhatsApp with a summary",
+  "Run an orchestrator tick: audit the roadmap and tell me the next action",
+  "Check bridge + Ollama/Docker status and fix anything degraded",
+  "Advance the bootstrap roadmap — pick the next undone task and implement it",
+  "Coordinate the agents: post a directive and brief me on WhatsApp",
 ];
 
 export default function ChatAgentPanel({ open, onClose }) {
@@ -103,8 +103,8 @@ export default function ChatAgentPanel({ open, onClose }) {
             <Sparkles className="w-4 h-4 text-primary-foreground" />
           </div>
           <div>
-            <p className="text-sm font-semibold">Autonomous Agent</p>
-            <p className="text-[10px] text-muted-foreground font-mono">full access · library · runs · bus · WhatsApp · Drive</p>
+            <p className="text-sm font-semibold">System Orchestrator</p>
+            <p className="text-[10px] text-muted-foreground font-mono">roadmap · monitor · coordinate · audit · fix · enhance</p>
           </div>
         </div>
         <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
@@ -123,7 +123,7 @@ export default function ChatAgentPanel({ open, onClose }) {
         <>
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 && !loading && (
-              <p className="text-sm text-muted-foreground text-center mt-8">Start a conversation — the agent can read/write your library, send WhatsApp, and back up to Drive on its own.</p>
+              <p className="text-sm text-muted-foreground text-center mt-8">The orchestrator owns the roadmap, monitors local + cloud systems, coordinates agents, and acts on its own. Tell it what to advance.</p>
             )}
             {messages.map((m, i) => (
               <div key={i} className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
