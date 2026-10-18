@@ -10,6 +10,7 @@ export const PHASES = [
   "Unified Agent Brain",
   "Self-Operating & Evolving",
   "Autonomous AI Company",
+  "System Alignment",
   "The Last Key",
 ];
 

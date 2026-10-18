@@ -113,13 +113,14 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
-    
+    // Clear the local session token so the app treats the user as signed out,
+    // then send them to the platform login page.
+    try {
+      window.localStorage.removeItem("base44_access_token");
+      window.localStorage.removeItem("token");
+    } catch (e) { /* ignore */ }
     if (shouldRedirect) {
-      // Use the SDK's logout method which handles token cleanup and redirect
-      base44.auth.logout(window.location.href);
-    } else {
-      // Just remove the token without redirect
-      base44.auth.logout();
+      base44.auth.redirectToLogin(window.location.href);
     }
   };
 
