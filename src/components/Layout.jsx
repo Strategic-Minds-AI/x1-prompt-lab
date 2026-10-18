@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   Layers, FileText, Wand2, Link2, Globe, Image, Terminal, LayoutDashboard, LinkIcon, FileUp,
-  AlertTriangle, Ghost, TrendingUp, Bot, Sparkles, Library, GitCompare
+  AlertTriangle, Ghost, TrendingUp, Bot, Sparkles, Library, GitCompare, Target
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import LangToggle from "./LangToggle";
@@ -14,6 +14,7 @@ const navItems = {
     { path: "/", icon: LayoutDashboard, label: "Command Center" },
     { path: "/prompt-studio", icon: Sparkles, label: "Prompt Studio" },
     { path: "/prompt-library", icon: Library, label: "Prompt Library" },
+    { path: "/vision-studio", icon: Target, label: "Vision Studio" },
     { path: "/model-compare", icon: GitCompare, label: "Comparar Modelos" },
     { path: "/multi-source", icon: Layers, label: "Multi-Fuente" },
     { path: "/structured-extraction", icon: FileText, label: "Extracción" },
@@ -31,6 +32,7 @@ const navItems = {
   ],
   en: [
     { path: "/", icon: LayoutDashboard, label: "Command Center" },
+    { path: "/vision-studio", icon: Target, label: "Vision Studio" },
     { path: "/prompt-studio", icon: Sparkles, label: "Prompt Studio" },
     { path: "/prompt-library", icon: Library, label: "Prompt Library" },
     { path: "/model-compare", icon: GitCompare, label: "Model Compare" },

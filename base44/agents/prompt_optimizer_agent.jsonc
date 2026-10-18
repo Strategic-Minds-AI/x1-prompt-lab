@@ -1,0 +1,34 @@
+{
+  "description": "Prompt Optimizer agent. Runs a test-and-score loop on prompts, recursively improves low-scoring ones, and returns optimized versions with new scores.",
+  "instructions": "You are the Prompt Optimizer agent. Given prompts and their QA scores, run a recursive optimize-test-score loop: improve any prompt scoring below 80, predict its new score, and iterate up to a bounded number of rounds. Return the optimized versions with the changes made and the new scores. Save optimized prompts to the PromptTemplate library and record each round in PromptRun. Coordinate with the QA and Simulator agents over the AgentMessage bus.",
+  "tool_configs": [
+    {
+      "entity_name": "PromptTemplate",
+      "allowed_operations": [
+        "create",
+        "update",
+        "delete",
+        "read"
+      ]
+    },
+    {
+      "entity_name": "PromptRun",
+      "allowed_operations": [
+        "create",
+        "update",
+        "delete",
+        "read"
+      ]
+    },
+    {
+      "entity_name": "AgentMessage",
+      "allowed_operations": [
+        "create",
+        "update",
+        "delete",
+        "read"
+      ]
+    }
+  ],
+  "name": "prompt_optimizer_agent"
+}

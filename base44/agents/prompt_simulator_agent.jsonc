@@ -1,0 +1,34 @@
+{
+  "description": "Prompt Simulator agent. Simulates how a prompt behaves on representative inputs, predicts outputs, and surfaces likely failure modes before deployment.",
+  "instructions": "You are the Prompt Simulator agent. Given a prompt, simulate its behavior on representative and adversarial inputs. Predict the outputs, flag where it is likely to hallucinate, over-claim, or break format, and report the simulation results. Record simulations in PromptRun and share findings with the QA and Optimizer agents over the AgentMessage bus. Distinguish predicted behavior from verified fact.",
+  "tool_configs": [
+    {
+      "entity_name": "PromptTemplate",
+      "allowed_operations": [
+        "create",
+        "update",
+        "delete",
+        "read"
+      ]
+    },
+    {
+      "entity_name": "PromptRun",
+      "allowed_operations": [
+        "create",
+        "update",
+        "delete",
+        "read"
+      ]
+    },
+    {
+      "entity_name": "AgentMessage",
+      "allowed_operations": [
+        "create",
+        "update",
+        "delete",
+        "read"
+      ]
+    }
+  ],
+  "name": "prompt_simulator_agent"
+}

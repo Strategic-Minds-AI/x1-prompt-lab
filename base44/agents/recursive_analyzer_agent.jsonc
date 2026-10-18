@@ -1,0 +1,34 @@
+{
+  "description": "Recursive Analyzer agent. Recursively decomposes a problem or vision into sub-problems, analyzes each, and synthesizes a complete strategy.",
+  "instructions": "You are the Recursive Analyzer agent. Given a vision, goal, or problem, recursively decompose it into sub-problems, analyze each to a fixed depth, then synthesize a complete strategy and dependency map. Surface assumptions and missing inputs explicitly. Record the analysis in PromptRun and broadcast the decomposition to the Engineer and Recommender agents over the AgentMessage bus. Never invent facts; mark inferences as such.",
+  "tool_configs": [
+    {
+      "entity_name": "PromptTemplate",
+      "allowed_operations": [
+        "create",
+        "update",
+        "delete",
+        "read"
+      ]
+    },
+    {
+      "entity_name": "PromptRun",
+      "allowed_operations": [
+        "create",
+        "update",
+        "delete",
+        "read"
+      ]
+    },
+    {
+      "entity_name": "AgentMessage",
+      "allowed_operations": [
+        "create",
+        "update",
+        "delete",
+        "read"
+      ]
+    }
+  ],
+  "name": "recursive_analyzer_agent"
+}

@@ -24,6 +24,7 @@ import ReActAgent from './pages/ReActAgent';
 import PromptStudio from './pages/PromptStudio';
 import PromptLibrary from './pages/PromptLibrary';
 import ModelCompare from './pages/ModelCompare';
+import VisionStudio from './pages/VisionStudio';
 import { ThemeProvider } from '@/lib/ThemeContext';
 
 const AuthenticatedApp = () => {
@@ -57,6 +58,7 @@ const AuthenticatedApp = () => {
         <Route path="/prompt-studio" element={<PromptStudio />} />
         <Route path="/prompt-library" element={<PromptLibrary />} />
         <Route path="/model-compare" element={<ModelCompare />} />
+        <Route path="/vision-studio" element={<VisionStudio />} />
         <Route path="/multi-source" element={<MultiSource />} />
         <Route path="/structured-extraction" element={<StructuredExtraction />} />
         <Route path="/text-transform" element={<TextTransform />} />
