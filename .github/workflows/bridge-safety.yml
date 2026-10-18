@@ -9,6 +9,12 @@ on:
       - "base44/functions/bridgeProxy/**"
       - "base44/functions/bridgeResult/**"
       - "base44/functions/bridgeStatus/**"
+      - "base44/agents/**"
+      - "base44/entities/LocalBridge.jsonc"
+      - "base44/entities/LocalCommand.jsonc"
+      - "base44/mcp/config.json"
+      - "src/pages/ModelCompare.jsx"
+      - "src/pages/Playground.jsx"
       - "public/local-bridge.mjs"
       - "src/pages/Dashboard.jsx"
       - "src/pages/Discovery.jsx"
@@ -16,8 +22,10 @@ on:
       - "src/pages/Terminal.jsx"
       - "tests/**"
       - "package.json"
+      - ".github/workflows/bridge-safety.yml"
   push:
     branches:
+      - "main"
       - "feature/x1-authority-boundary-20261018"
     paths:
       - "base44/shared/bridge-contract.js"
@@ -26,6 +34,12 @@ on:
       - "base44/functions/bridgeProxy/**"
       - "base44/functions/bridgeResult/**"
       - "base44/functions/bridgeStatus/**"
+      - "base44/agents/**"
+      - "base44/entities/LocalBridge.jsonc"
+      - "base44/entities/LocalCommand.jsonc"
+      - "base44/mcp/config.json"
+      - "src/pages/ModelCompare.jsx"
+      - "src/pages/Playground.jsx"
       - "public/local-bridge.mjs"
       - "src/pages/Dashboard.jsx"
       - "src/pages/Discovery.jsx"
@@ -33,6 +47,7 @@ on:
       - "src/pages/Terminal.jsx"
       - "tests/**"
       - "package.json"
+      - ".github/workflows/bridge-safety.yml"
 
 jobs:
   bridge-contract:
