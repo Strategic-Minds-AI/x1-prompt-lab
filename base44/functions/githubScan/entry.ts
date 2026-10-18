@@ -9,14 +9,17 @@ export default async function(req) {
 
     const S = base44.asServiceRole;
     const { accessToken } = await S.connectors.getConnection('github');
-    const auth = { Authorization: 'Bearer ' + accessToken, Accept: 'application/vnd.github+json' };
+    const auth = { Authorization: 'Bearer ' + accessToken, Accept: 'application/vnd.github+json', 'User-Agent': 'PromptLab-Orchestrator' };
 
     const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
     const reposRes = await fetch('https://api.github.com/user/repos?sort=updated&per_page=100&direction=desc', {
       headers: auth,
       signal: AbortSignal.timeout(15000),
     });
-    if (!reposRes.ok) return Response.json({ error: 'github api error' }, { status: 502 });
+    if (!reposRes.ok) {
+      const detail = await reposRes.text();
+      return Response.json({ error: 'github api error', status: reposRes.status, detail }, { status: 502 });
+    }
     const repos = await reposRes.json();
 
     const recent = (repos || [])
