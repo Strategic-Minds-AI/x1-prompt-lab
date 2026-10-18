@@ -1,0 +1,42 @@
+name: Prompt Lab Quality Gates
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "jsconfig.json"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.js"
+      - ".github/workflows/prompt-lab-quality.yml"
+  push:
+    branches:
+      - "main"
+      - "fix/typecheck-ui-primitives-20261018"
+    paths:
+      - "src/**"
+      - "jsconfig.json"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.js"
+      - ".github/workflows/prompt-lab-quality.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:bridge
+      - run: npm run build

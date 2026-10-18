@@ -1,6 +1,9 @@
 import { createContext, useContext, useState } from "react";
 
-export const LangContext = createContext({ lang: "en", setLang: () => {} });
+/** @type {import("react").Dispatch<import("react").SetStateAction<string>>} */
+const noopSetLang = () => {};
+
+export const LangContext = createContext({ lang: "en", setLang: noopSetLang });
 
 export function LangProvider({ children }) {
   const [lang, setLang] = useState("en");

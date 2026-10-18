@@ -90,10 +90,13 @@ export default function ReActAgent() {
       const decision = await base44.integrations.Core.InvokeLLM({
         prompt: buildDecisionPrompt(task, history),
         response_json_schema: DECISION_SCHEMA,
-        model: "gemini_3_flash",
+        model: "gemini_3_8_flash",
       });
 
-      const dec = typeof decision === "object" && decision !== null ? decision : { thought: String(decision), action: "done", answer: String(decision) };
+      const parsedDecision = typeof decision === "string" ? (() => { try { return JSON.parse(decision); } catch { return { thought: decision, action: "done", answer: decision }; } })() : decision;
+      const dec = typeof parsedDecision === "object" && parsedDecision !== null
+        ? /** @type {{ thought?: string; observation_check?: string; action?: string; action_input?: string; answer?: string }} */ (parsedDecision)
+        : { thought: String(parsedDecision), action: "done", answer: String(parsedDecision) };
       const thought = dec.thought || "";
       const observationCheck = dec.observation_check || "";
       const action = dec.action || "done";
@@ -109,8 +112,7 @@ export default function ReActAgent() {
         break;
       }
 
-      const params = { prompt: actionInput, model: "gemini_3_flash" };
-      if (action === "search") params.add_context_from_internet = true;
+      const params = { prompt: actionInput, model: /** @type {"gemini_3_8_flash"} */ ("gemini_3_8_flash"), add_context_from_internet: action === "search" };
       const observation = await base44.integrations.Core.InvokeLLM(params);
       const obsText = typeof observation === "string" ? observation : JSON.stringify(observation, null, 2);
 
@@ -122,7 +124,7 @@ export default function ReActAgent() {
     if (!done) {
       const synthesis = await base44.integrations.Core.InvokeLLM({
         prompt: `Task: ${task}\n\nBased on your research so far, provide a final comprehensive answer. If any observations contained outdated information, prioritize the most recent and verified data.\n\n${history}`,
-        model: "gemini_3_flash",
+        model: "gemini_3_8_flash",
       });
       setFinalAnswer(typeof synthesis === "string" ? synthesis : JSON.stringify(synthesis));
     }

@@ -1,4 +1,4 @@
-export default function PromptCard({ p, score }) {
+export default function PromptCard({ p, score = null }) {
   return (
     <div className="rounded-lg border border-border bg-secondary/30 p-3">
       <div className="flex items-center justify-between mb-1">
