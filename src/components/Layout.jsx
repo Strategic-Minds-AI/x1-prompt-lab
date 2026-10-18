@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   Layers, FileText, Wand2, Link2, Globe, Image, Terminal, LayoutDashboard, LinkIcon, FileUp,
-  AlertTriangle, Ghost, TrendingUp, Bot, Sparkles, Library, GitCompare, Target, Plug, Compass, Cpu, Rocket
+  AlertTriangle, Ghost, TrendingUp, Bot, Sparkles, Library, GitCompare, Target, Plug, Compass, Cpu, Rocket, LogOut
 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import { useLang } from "@/lib/LangContext";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -113,6 +114,12 @@ export default function Layout() {
           </button>
           <LangToggle />
           <ThemeToggle />
+          <button
+            onClick={() => base44.auth.logout()}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors w-full"
+          >
+            <LogOut className="w-4 h-4" /> Log out
+          </button>
         </div>
       </aside>
 
