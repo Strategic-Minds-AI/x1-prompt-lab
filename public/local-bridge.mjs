@@ -73,6 +73,26 @@ async function runIngest(filePath) {
   } catch (e) { return { status: 'failed', error: e.message }; }
 }
 
+async function runProxy({ url, method = 'GET', headers = {}, body }) {
+  const u = new URL(url);
+  const host = u.hostname;
+  if (!['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(host)) {
+    return { status: 'failed', error: 'proxy only allowed for localhost' };
+  }
+  try {
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: body ? (typeof body === 'string' ? body : JSON.stringify(body)) : undefined,
+      signal: AbortSignal.timeout(30000),
+    });
+    const text = await res.text();
+    const respHeaders = {};
+    res.headers.forEach((v, k) => { respHeaders[k] = v; });
+    return { status: 'done', output: text.slice(0, 50000), result: { status: res.status, headers: respHeaders } };
+  } catch (e) { return { status: 'failed', error: e.message }; }
+}
+
 async function runOrganize(mapping, root) {
   const log = [];
   for (const [src, folder] of Object.entries(mapping)) {
@@ -94,6 +114,7 @@ async function handle(cmd) {
     else if (cmd.type === 'scan') r = await runScan(cmd.command);
     else if (cmd.type === 'ingest') r = await runIngest(cmd.command);
     else if (cmd.type === 'organize') r = await runOrganize(cmd.args?.mapping || {}, cmd.args?.root);
+    else if (cmd.type === 'proxy') r = await runProxy({ url: cmd.command, method: cmd.args?.method, headers: cmd.args?.headers, body: cmd.args?.body });
     else r = { status: 'failed', error: 'unknown type ' + cmd.type };
     await post('/functions/bridgeResult', { session_id: SESSION_ID, command_id: cmd.command_id, ...r });
     console.log(`[bridge] ${cmd.type} ${String(cmd.command).slice(0, 60)} -> ${r.status}`);

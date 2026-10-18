@@ -13,16 +13,17 @@
         "scan",
         "ingest",
         "organize",
-        "stat"
+        "stat",
+        "proxy"
       ]
     },
     "command": {
       "type": "string",
-      "description": "Shell command, folder path, or file path"
+      "description": "Shell command, folder path, file path, or local URL for proxy"
     },
     "args": {
       "type": "object",
-      "description": "Extra args e.g. {mapping, root} for organize"
+      "description": "Extra args e.g. {mapping, root} for organize, or {method, headers, body} for proxy"
     },
     "status": {
       "type": "string",
