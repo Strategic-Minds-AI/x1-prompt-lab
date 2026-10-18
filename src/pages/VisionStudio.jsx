@@ -120,6 +120,13 @@ export default function VisionStudio() {
 
   const run = async (prompt, schema) => {
     const res = await base44.integrations.Core.InvokeLLM({ prompt, response_json_schema: schema });
+    if (typeof res === "string") {
+      try {
+        return JSON.parse(res);
+      } catch {
+        throw new Error("The structured model response was not valid JSON.");
+      }
+    }
     return res;
   };
 

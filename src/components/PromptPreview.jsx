@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Code2 } from "lucide-react";
 
-export default function PromptPreview({ buildPrompt, label }) {
+export default function PromptPreview({ buildPrompt, label = "View InvokeLLM prompt" }) {
   const [open, setOpen] = useState(false);
 
   const prompt = open ? buildPrompt() : null;

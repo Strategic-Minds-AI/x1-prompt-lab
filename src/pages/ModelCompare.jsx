@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast";
 import DriveConnect from "@/components/DriveConnect";
 
+/** @type {Array<{ id: "claude-sonnet-5" | "gpt_6_sol" | "gemini_3_8_flash", label: string, family: string, color: string }>} */
 const MODELS = [
   { id: "claude-sonnet-5", label: "Claude Sonnet 5", family: "Anthropic", color: "text-orange-500" },
   { id: "gpt_6_sol", label: "GPT-6 Sol", family: "OpenAI", color: "text-emerald-500" },
@@ -73,7 +74,7 @@ export default function ModelCompare() {
       if (driveConnected) {
         base44.functions.invoke("syncPromptToDrive", {
           title: "compare-" + Date.now(),
-          content: `# Model Comparison\n\n## Prompt\n${promptText}\n\n${out.map((o) => `\n## ${o.model.label}\n${o.ok ? o.output : "ERROR: " + o.error}`).join("\n")}`,
+          content: `# Model Comparison\n\n## Prompt\n${promptText}\n\n${out.map((o) => `\n## ${o.model.label}\n${o.ok ? o.output : "ERROR: " + ("error" in o ? o.error : "Unknown error")}`).join("\n")}`,
           mode: "compare",
         }).then((r) => toast({ title: "Backed up to Google Drive" })).catch(() => setDriveConnected(false));
       }

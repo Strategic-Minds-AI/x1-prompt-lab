@@ -2,7 +2,7 @@ import { Copy, Check, Clock } from "lucide-react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 
-export default function ResultPanel({ result, isLoading, elapsed }) {
+export default function ResultPanel({ result, isLoading, elapsed = null }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {

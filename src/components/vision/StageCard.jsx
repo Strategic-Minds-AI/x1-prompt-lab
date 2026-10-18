@@ -1,4 +1,4 @@
-export default function StageCard({ icon: Icon, title, step, status, actionLabel, onAction, disabled, children }) {
+export default function StageCard({ icon: Icon, title, step, status = "idle", actionLabel = undefined, onAction = () => {}, disabled = false, children }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center justify-between mb-3">

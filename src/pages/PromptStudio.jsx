@@ -175,7 +175,8 @@ ${input}
 """
 
 Return JSON only.`;
-        const res = await base44.integrations.Core.InvokeLLM({ prompt: meta, response_json_schema: ROUTER_SCHEMA });
+        const raw = await base44.integrations.Core.InvokeLLM({ prompt: meta, response_json_schema: ROUTER_SCHEMA });
+        const res = typeof raw === "string" ? JSON.parse(raw) : raw;
         setResult(res);
         setElapsed(Date.now() - start);
         if (res?.category) {
@@ -187,7 +188,8 @@ Return JSON only.`;
       } else {
         const meta = mode === "optimize" ? OPTIMIZE_META.replace("{PROMPT}", input) : GOAL_META.replace("{GOAL}", input);
         const schema = mode === "optimize" ? OPTIMIZE_SCHEMA : GOAL_SCHEMA;
-        const res = await base44.integrations.Core.InvokeLLM({ prompt: meta, response_json_schema: schema });
+        const raw = await base44.integrations.Core.InvokeLLM({ prompt: meta, response_json_schema: schema });
+        const res = typeof raw === "string" ? JSON.parse(raw) : raw;
         setResult(res);
         setElapsed(Date.now() - start);
         await base44.entities.PromptRun.create({

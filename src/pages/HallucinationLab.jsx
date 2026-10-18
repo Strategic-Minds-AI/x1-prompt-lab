@@ -102,7 +102,7 @@ export default function HallucinationLab() {
     const res = await base44.integrations.Core.InvokeLLM({
       prompt: buildPrompt(),
       add_context_from_internet: useWeb,
-      model: useWeb ? "gemini_3_flash" : undefined,
+      model: useWeb ? "gemini_3_8_flash" : undefined,
     });
     setElapsed(Date.now() - start);
     setResult(res);
