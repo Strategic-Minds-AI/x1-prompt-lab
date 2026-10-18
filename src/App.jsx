@@ -28,6 +28,7 @@ import VisionStudio from './pages/VisionStudio';
 import Connections from './pages/Connections';
 import Terminal from './pages/Terminal';
 import Discovery from './pages/Discovery';
+import OAuthConsent from './pages/OAuthConsent';
 import { ThemeProvider } from '@/lib/ThemeContext';
 
 const AuthenticatedApp = () => {
@@ -56,6 +57,7 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
+      <Route path="/oauth/consent" element={<OAuthConsent />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/prompt-studio" element={<PromptStudio />} />

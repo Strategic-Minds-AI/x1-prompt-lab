@@ -1,0 +1,67 @@
+{
+  "auth": "oauth",
+  "tools": {
+    "functions": [
+      {
+        "name": "run_local_command",
+        "title": "Run local command",
+        "description": "Queue a command for the user's connected local bridge (shell, scan, ingest, or organize). Requires a live bridge session id; returns a command id you poll via check_local_bridge.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "session_id": { "type": "string", "description": "The local bridge session id" },
+            "type": { "type": "string", "enum": ["shell", "scan", "ingest", "organize", "stat"], "description": "Command type: shell runs a shell command, scan lists a folder, ingest reads a file, organize moves files per args.mapping" },
+            "command": { "type": "string", "description": "Shell command, folder path, or file path" },
+            "args": { "type": "object", "description": "Extra args, e.g. {mapping, root} for organize" }
+          },
+          "required": ["session_id", "type", "command"]
+        },
+        "handler": "bridgeCommand",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": false }
+      },
+      {
+        "name": "check_local_bridge",
+        "title": "Check local bridge",
+        "description": "Check whether the user's local bridge is online and list its recent commands. Read-only.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "session_id": { "type": "string", "description": "The local bridge session id" }
+          },
+          "required": ["session_id"]
+        },
+        "handler": "bridgeStatus",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "classify_files",
+        "title": "Classify files",
+        "description": "Run the intelligent router over a list of files (path, size, ext) and return a mapping of each file path to a target category folder name. Read-only.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "files": { "type": "array", "items": { "type": "object" }, "description": "Array of file objects with at least a path; optional size and ext" }
+          },
+          "required": ["files"]
+        },
+        "handler": "bridgeRoute",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "backup_to_drive",
+        "title": "Backup to Drive",
+        "description": "Upload a text/markdown document to the user's connected Google Drive for record keeping. Requires the user to have connected Google Drive.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "description": "File title (max 120 chars)" },
+            "content": { "type": "string", "description": "Markdown or text content to upload" }
+          },
+          "required": ["content"]
+        },
+        "handler": "syncPromptToDrive",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": false }
+      }
+    ]
+  }
+}
