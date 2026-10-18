@@ -18,6 +18,16 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAppState = async () => {
+    // If we just logged out, the server has cleared the session cookie and
+    // redirected back here. Force the login page now.
+    try {
+      if (window.sessionStorage.getItem("base44_force_login") === "1") {
+        window.sessionStorage.removeItem("base44_force_login");
+        base44.auth.redirectToLogin(window.location.href);
+        return;
+      }
+    } catch (e) { /* ignore */ }
+
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
@@ -113,14 +123,17 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
-    // Clear the local session token so the app treats the user as signed out,
-    // then send them to the platform login page.
-    try {
-      window.localStorage.removeItem("base44_access_token");
-      window.localStorage.removeItem("token");
-    } catch (e) { /* ignore */ }
     if (shouldRedirect) {
-      base44.auth.redirectToLogin(window.location.href);
+      // Mark that we want to land on the login page after the server clears the
+      // session cookie. The server logout redirects back here; checkAppState
+      // sees the flag and bounces to the login page.
+      try { window.sessionStorage.setItem("base44_force_login", "1"); } catch (e) { /* ignore */ }
+      base44.auth.logout();
+    } else {
+      try {
+        window.localStorage.removeItem("base44_access_token");
+        window.localStorage.removeItem("token");
+      } catch (e) { /* ignore */ }
     }
   };
 
