@@ -1,0 +1,44 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "supabase_scan",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "scan": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "supabaseScan"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Supabase scan",
+            "description": "Inspect Supabase projects + post a data-intelligence digest to the agent bus"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Supabase Scan",
+  "description": "Proactive data-intelligence scan: lists connected Supabase projects, inspects public schemas, and posts a digest + next action to the agent bus every 12 hours.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 12,
+      "interval_unit": "hours",
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

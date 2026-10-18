@@ -64,6 +64,10 @@
     {
       "function_name": "gmailMonitor",
       "description": "Read unread mail from the orchestrator inbox (ai@thevisioncortex.com), summarize and flag important messages"
+    },
+    {
+      "function_name": "supabaseScan",
+      "description": "Inspect connected Supabase projects and schemas, then post a data-intelligence digest to the bus"
     }
   ],
   "context_files": [],
