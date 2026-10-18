@@ -1,0 +1,14 @@
+{
+  "name": "PromptLab — Prompt Engineering OS",
+  "short_name": "PromptLab",
+  "description": "Strategic prompt engineering: audit, optimize, simulate, route, and compare models across your prompt library.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0e14",
+  "theme_color": "#3b82f6",
+  "icons": [
+    { "src": "https://base44.com/logo_v2.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "https://base44.com/logo_v2.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

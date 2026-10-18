@@ -1,16 +1,19 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   Layers, FileText, Wand2, Link2, Globe, Image, Terminal, LayoutDashboard, LinkIcon, FileUp,
-  AlertTriangle, Ghost, TrendingUp, Bot, Sparkles, Library
+  AlertTriangle, Ghost, TrendingUp, Bot, Sparkles, Library, GitCompare
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import LangToggle from "./LangToggle";
+import ThemeToggle from "./ThemeToggle";
+import ChatAgentPanel from "./ChatAgentPanel";
 
 const navItems = {
   es: [
     { path: "/", icon: LayoutDashboard, label: "Command Center" },
     { path: "/prompt-studio", icon: Sparkles, label: "Prompt Studio" },
     { path: "/prompt-library", icon: Library, label: "Prompt Library" },
+    { path: "/model-compare", icon: GitCompare, label: "Comparar Modelos" },
     { path: "/multi-source", icon: Layers, label: "Multi-Fuente" },
     { path: "/structured-extraction", icon: FileText, label: "Extracción" },
     { path: "/text-transform", icon: Wand2, label: "Transformación" },
@@ -29,6 +32,7 @@ const navItems = {
     { path: "/", icon: LayoutDashboard, label: "Command Center" },
     { path: "/prompt-studio", icon: Sparkles, label: "Prompt Studio" },
     { path: "/prompt-library", icon: Library, label: "Prompt Library" },
+    { path: "/model-compare", icon: GitCompare, label: "Model Compare" },
     { path: "/multi-source", icon: Layers, label: "Multi-Source" },
     { path: "/structured-extraction", icon: FileText, label: "Extraction" },
     { path: "/text-transform", icon: Wand2, label: "Transform" },
@@ -85,9 +89,10 @@ export default function Layout() {
           })}
         </nav>
 
-        {/* Lang toggle */}
-        <div className="p-3 border-t border-border">
+        {/* Lang + theme toggle */}
+        <div className="p-3 border-t border-border space-y-2">
           <LangToggle />
+          <ThemeToggle />
         </div>
       </aside>
 
@@ -95,6 +100,7 @@ export default function Layout() {
       <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
+      <ChatAgentPanel />
     </div>
   );
 }

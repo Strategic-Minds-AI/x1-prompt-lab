@@ -23,6 +23,8 @@ import OverconfidenceLab from './pages/OverconfidenceLab';
 import ReActAgent from './pages/ReActAgent';
 import PromptStudio from './pages/PromptStudio';
 import PromptLibrary from './pages/PromptLibrary';
+import ModelCompare from './pages/ModelCompare';
+import { ThemeProvider } from '@/lib/ThemeContext';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -54,6 +56,7 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Dashboard />} />
         <Route path="/prompt-studio" element={<PromptStudio />} />
         <Route path="/prompt-library" element={<PromptLibrary />} />
+        <Route path="/model-compare" element={<ModelCompare />} />
         <Route path="/multi-source" element={<MultiSource />} />
         <Route path="/structured-extraction" element={<StructuredExtraction />} />
         <Route path="/text-transform" element={<TextTransform />} />
@@ -78,6 +81,7 @@ function App() {
 
   return (
     <AuthProvider>
+      <ThemeProvider>
       <LangProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
@@ -86,6 +90,7 @@ function App() {
           <Toaster />
         </QueryClientProvider>
       </LangProvider>
+      </ThemeProvider>
     </AuthProvider>
   )
 }

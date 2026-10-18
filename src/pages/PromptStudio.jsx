@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Sparkles, Target, Play, Copy, Check, Save, AlertTriangle, Ghost, TrendingUp, Link2, Lightbulb } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { Sparkles, Target, Play, Copy, Check, Save, AlertTriangle, Ghost, TrendingUp, Link2, Lightbulb, Compass } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import DriveConnect from "@/components/DriveConnect";
 
 const OPTIMIZE_SCHEMA = {
   type: "object",
@@ -61,6 +62,16 @@ const GOAL_SCHEMA = {
   },
 };
 
+const ROUTER_SCHEMA = {
+  type: "object",
+  properties: {
+    category: { type: "string" },
+    suggested_approach: { type: "string" },
+    why: { type: "string" },
+    missing_inputs: { type: "array", items: { type: "string" } },
+  },
+};
+
 const OPTIMIZE_META = `You are an elite prompt engineer. Run a full engineering pipeline on the prompt below to produce the best possible version.
 
 PROMPT TO OPTIMIZE:
@@ -111,38 +122,83 @@ function ScoreBadge({ score }) {
 }
 
 export default function PromptStudio() {
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const [mode, setMode] = useState(params.get("mode") === "goal" ? "goal" : "optimize");
+  const [mode, setMode] = useState(params.get("mode") === "goal" ? "goal" : params.get("mode") === "route" ? "route" : "optimize");
   const [input, setInput] = useState(params.get("prompt") || "");
   const [result, setResult] = useState(null);
+  const [routeMatches, setRouteMatches] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [elapsed, setElapsed] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [driveConnected, setDriveConnected] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    base44.entities.PromptTemplate.list({ distinct: "category" }).then((c) => setCategories(c.items || []));
+  }, []);
 
   const switchMode = (m) => {
     setMode(m);
     setResult(null);
-    setParams(m === "goal" ? { mode: "goal" } : {});
+    setRouteMatches([]);
+    setParams(m === "optimize" ? {} : { mode: m });
+  };
+
+  const backupToDrive = async (title, content) => {
+    if (!driveConnected) return;
+    try {
+      await base44.functions.invoke("syncPromptToDrive", { title, content, mode });
+      toast({ title: "Backed up to Google Drive" });
+    } catch (e) {
+      setDriveConnected(false);
+      toast({ title: "Drive backup skipped", description: "Connect Google Drive to enable backups.", variant: "destructive" });
+    }
   };
 
   const run = async () => {
     if (!input.trim()) return;
     setIsLoading(true);
     setResult(null);
+    setRouteMatches([]);
     const start = Date.now();
-    const meta = mode === "optimize" ? OPTIMIZE_META.replace("{PROMPT}", input) : GOAL_META.replace("{GOAL}", input);
-    const schema = mode === "optimize" ? OPTIMIZE_SCHEMA : GOAL_SCHEMA;
     try {
-      const res = await base44.integrations.Core.InvokeLLM({ prompt: meta, response_json_schema: schema });
-      setResult(res);
-      setElapsed(Date.now() - start);
-      await base44.entities.PromptRun.create({
-        mode,
-        input,
-        output: JSON.stringify(res),
-        quality_score: res?.quality_score ?? null,
-        model: "automatic",
-      });
+      if (mode === "route") {
+        const catList = categories.join(", ");
+        const meta = `You are the Master Prompt Router for the PromptLab library of 1,300+ strategic prompts across these categories: ${catList}
+
+Given the user's task, classify the intent and select the single best matching category from the list above, then describe the narrowest approach. Do not invent missing facts; list them in missing_inputs.
+
+TASK:
+"""
+${input}
+"""
+
+Return JSON only.`;
+        const res = await base44.integrations.Core.InvokeLLM({ prompt: meta, response_json_schema: ROUTER_SCHEMA });
+        setResult(res);
+        setElapsed(Date.now() - start);
+        if (res?.category) {
+          const { items } = await base44.entities.PromptTemplate.filter({ category: res.category }, { sort: "-created_date", limit: 6 });
+          setRouteMatches(items);
+        }
+        await base44.entities.PromptRun.create({ mode: "route", input, output: JSON.stringify(res), model: "automatic" });
+        backupToDrive("route-" + Date.now(), `# Route\n\n## Task\n${input}\n\n## Result\n${JSON.stringify(res, null, 2)}`);
+      } else {
+        const meta = mode === "optimize" ? OPTIMIZE_META.replace("{PROMPT}", input) : GOAL_META.replace("{GOAL}", input);
+        const schema = mode === "optimize" ? OPTIMIZE_SCHEMA : GOAL_SCHEMA;
+        const res = await base44.integrations.Core.InvokeLLM({ prompt: meta, response_json_schema: schema });
+        setResult(res);
+        setElapsed(Date.now() - start);
+        await base44.entities.PromptRun.create({
+          mode,
+          input,
+          output: JSON.stringify(res),
+          quality_score: res?.quality_score ?? null,
+          model: "automatic",
+        });
+        backupToDrive(mode + "-" + Date.now(), `# ${mode}\n\n## Input\n${input}\n\n## Output\n${JSON.stringify(res, null, 2)}`);
+      }
     } catch (e) {
       toast({ title: "Error", description: String(e.message || e), variant: "destructive" });
     }
@@ -160,35 +216,41 @@ export default function PromptStudio() {
         tags: ["optimized", "studio"],
       });
       toast({ title: "Saved to library" });
+      backupToDrive("optimized-" + Date.now(), result.optimized_prompt);
     }
+  };
+
+  const loadMatchIntoStudio = (t) => {
+    setInput(t.prompt_text);
+    setMode("optimize");
+    setResult(null);
+    setParams({ prompt: t.prompt_text });
   };
 
   return (
     <div className="p-6 lg:p-10 max-w-5xl mx-auto">
-      <div className="mb-8">
+      <div className="mb-8 flex items-start justify-between">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
             <Sparkles className="w-5 h-5 text-primary" />
           </div>
           <div>
             <h1 className="text-xl font-semibold">Prompt Studio</h1>
-            <p className="text-sm text-muted-foreground">The deterministic prompt engineering tool — audit, enhance, simulate, score.</p>
+            <p className="text-sm text-muted-foreground">Audit, optimize, simulate, score — or route a task to the best library prompt.</p>
           </div>
         </div>
+        <DriveConnect connected={driveConnected} onConnected={() => setDriveConnected(true)} />
       </div>
 
       <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => switchMode("optimize")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "optimize" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
-        >
-          <Sparkles className="w-4 h-4" /> Optimize a Prompt
+        <button onClick={() => switchMode("optimize")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "optimize" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
+          <Sparkles className="w-4 h-4" /> Optimize
         </button>
-        <button
-          onClick={() => switchMode("goal")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "goal" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
-        >
+        <button onClick={() => switchMode("goal")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "goal" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
           <Target className="w-4 h-4" /> Goal Mode
+        </button>
+        <button onClick={() => switchMode("route")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "route" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
+          <Compass className="w-4 h-4" /> Router
         </button>
       </div>
 
@@ -196,43 +258,82 @@ export default function PromptStudio() {
         <div className="space-y-4">
           <div>
             <label className="text-xs font-mono text-muted-foreground mb-1.5 block">
-              {mode === "optimize" ? "Prompt to engineer" : "Your goal — what do you want to achieve?"}
+              {mode === "optimize" ? "Prompt to engineer" : mode === "goal" ? "Your goal — what do you want to achieve?" : "Task — describe what you want to accomplish"}
             </label>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={mode === "optimize" ? "Paste a prompt to audit, fix, and enhance..." : "e.g. Build the best website generation system in existence"}
+              placeholder={mode === "optimize" ? "Paste a prompt to audit, fix, and enhance..." : mode === "goal" ? "e.g. Build the best website generation system in existence" : "e.g. Build a lead-gen site for a plumber in Miami"}
               className="min-h-[220px] bg-secondary/50 font-mono text-sm"
             />
           </div>
           <Button onClick={run} disabled={!input.trim() || isLoading} className="w-full gap-2">
-            <Play className="w-4 h-4" /> {isLoading ? "Engineering..." : mode === "optimize" ? "Run Engineering Pipeline" : "Reverse-Engineer Prompts"}
+            <Play className="w-4 h-4" /> {isLoading ? "Working..." : mode === "optimize" ? "Run Engineering Pipeline" : mode === "goal" ? "Reverse-Engineer Prompts" : "Route Task"}
           </Button>
           {isLoading && (
             <div className="flex items-center gap-2 text-sm text-primary">
               <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-              {mode === "optimize" ? "Auditing, enhancing, simulating, scoring..." : "Analyzing goal, identifying best prompts and chains..."}
+              {mode === "route" ? "Classifying intent, matching library category..." : mode === "optimize" ? "Auditing, enhancing, simulating, scoring..." : "Analyzing goal, identifying best prompts and chains..."}
             </div>
           )}
-          {elapsed && !isLoading && (
-            <p className="text-xs text-muted-foreground">Completed in {elapsed}ms</p>
-          )}
+          {elapsed && !isLoading && <p className="text-xs text-muted-foreground">Completed in {elapsed}ms</p>}
         </div>
 
         <div className="space-y-4">
           {!result && !isLoading && (
             <div className="border border-dashed border-border rounded-lg bg-card/50 p-8 flex items-center justify-center min-h-[300px]">
               <p className="text-sm text-muted-foreground text-center">
-                {mode === "optimize" ? "Run the pipeline to get an audit, optimized prompt, simulation, and score." : "State your goal to get reverse-engineered prompts and chains."}
+                {mode === "optimize" ? "Run the pipeline to get an audit, optimized prompt, simulation, and score." : mode === "goal" ? "State your goal to get reverse-engineered prompts and chains." : "Paste a task and the router will match it to the best category and prompts in your library."}
               </p>
             </div>
           )}
-          {result && mode === "optimize" && (
-            <OptimizeResult result={result} onSave={saveToLibrary} />
-          )}
+          {result && mode === "optimize" && <OptimizeResult result={result} onSave={saveToLibrary} />}
           {result && mode === "goal" && <GoalResult result={result} />}
+          {result && mode === "route" && <RouterResult result={result} matches={routeMatches} onLoad={loadMatchIntoStudio} />}
         </div>
       </div>
+    </div>
+  );
+}
+
+function RouterResult({ result, matches, onLoad }) {
+  return (
+    <div className="space-y-4">
+      <div className="border border-border rounded-lg bg-card p-4">
+        <p className="text-xs font-mono text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+          <Compass className="w-3.5 h-3.5 text-primary" /> Routed Category
+        </p>
+        <p className="text-sm font-semibold text-primary mb-2">{result.category || "—"}</p>
+        {result.why && <p className="text-sm text-foreground/80 mb-2">{result.why}</p>}
+        {result.suggested_approach && (
+          <p className="text-xs text-muted-foreground whitespace-pre-wrap">{result.suggested_approach}</p>
+        )}
+        {result.missing_inputs?.length > 0 && (
+          <div className="mt-2 p-2 rounded-md bg-amber-500/10 border border-amber-500/20">
+            <p className="text-[10px] font-mono text-amber-500 mb-0.5">Missing inputs</p>
+            <ul className="text-xs text-foreground/80 list-disc list-inside">{result.missing_inputs.map((m, i) => <li key={i}>{m}</li>)}</ul>
+          </div>
+        )}
+      </div>
+      {matches.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-mono text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-primary" /> Matching Library Prompts ({matches.length})
+          </p>
+          {matches.map((t) => (
+            <div key={t.id} className="border border-border rounded-lg bg-card overflow-hidden">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-secondary/30">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{t.title}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono truncate">{t.goal || t.category}</p>
+                </div>
+                <Button onClick={() => onLoad(t)} size="sm" variant="outline" className="gap-1.5 flex-shrink-0 ml-2"><Play className="w-3 h-3" /> Load</Button>
+              </div>
+              <pre className="p-3 text-xs font-mono text-foreground/70 whitespace-pre-wrap break-words max-h-[120px] overflow-y-auto">{t.prompt_text}</pre>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -283,11 +384,11 @@ function OptimizeResult({ result, onSave }) {
           )}
           <div className="grid grid-cols-2 gap-3 mt-3">
             <div className="p-2 rounded-md bg-amber-500/10 border border-amber-500/20">
-              <p className="text-[10px] font-mono text-amber-400 mb-0.5 flex items-center gap-1"><Ghost className="w-3 h-3" /> Hallucination risk</p>
+              <p className="text-[10px] font-mono text-amber-500 mb-0.5 flex items-center gap-1"><Ghost className="w-3 h-3" /> Hallucination risk</p>
               <p className="text-xs text-foreground/80">{audit.hallucination_risk || "—"}</p>
             </div>
             <div className="p-2 rounded-md bg-violet-500/10 border border-violet-500/20">
-              <p className="text-[10px] font-mono text-violet-400 mb-0.5 flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Overconfidence risk</p>
+              <p className="text-[10px] font-mono text-violet-500 mb-0.5 flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Overconfidence risk</p>
               <p className="text-xs text-foreground/80">{audit.overconfidence_risk || "—"}</p>
             </div>
           </div>
