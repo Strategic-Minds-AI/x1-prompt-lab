@@ -1,0 +1,32 @@
+{
+  "name": "PromptRun",
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "optimize",
+        "goal"
+      ]
+    },
+    "input": {
+      "type": "string"
+    },
+    "output": {
+      "type": "string"
+    },
+    "quality_score": {
+      "type": "number"
+    },
+    "model": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "mode",
+    "input"
+  ]
+}

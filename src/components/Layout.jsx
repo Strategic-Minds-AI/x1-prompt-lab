@@ -1,14 +1,16 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   Layers, FileText, Wand2, Link2, Globe, Image, Terminal, LayoutDashboard, LinkIcon, FileUp,
-  AlertTriangle, Ghost, TrendingUp, Bot
+  AlertTriangle, Ghost, TrendingUp, Bot, Sparkles, Library
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import LangToggle from "./LangToggle";
 
 const navItems = {
   es: [
-    { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/", icon: LayoutDashboard, label: "Command Center" },
+    { path: "/prompt-studio", icon: Sparkles, label: "Prompt Studio" },
+    { path: "/prompt-library", icon: Library, label: "Prompt Library" },
     { path: "/multi-source", icon: Layers, label: "Multi-Fuente" },
     { path: "/structured-extraction", icon: FileText, label: "Extracción" },
     { path: "/text-transform", icon: Wand2, label: "Transformación" },
@@ -24,7 +26,9 @@ const navItems = {
     { path: "/playground", icon: Terminal, label: "Playground" },
   ],
   en: [
-    { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/", icon: LayoutDashboard, label: "Command Center" },
+    { path: "/prompt-studio", icon: Sparkles, label: "Prompt Studio" },
+    { path: "/prompt-library", icon: Library, label: "Prompt Library" },
     { path: "/multi-source", icon: Layers, label: "Multi-Source" },
     { path: "/structured-extraction", icon: FileText, label: "Extraction" },
     { path: "/text-transform", icon: Wand2, label: "Transform" },

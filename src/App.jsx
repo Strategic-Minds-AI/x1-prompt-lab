@@ -21,6 +21,8 @@ import BiasDetection from './pages/BiasDetection';
 import HallucinationLab from './pages/HallucinationLab';
 import OverconfidenceLab from './pages/OverconfidenceLab';
 import ReActAgent from './pages/ReActAgent';
+import PromptStudio from './pages/PromptStudio';
+import PromptLibrary from './pages/PromptLibrary';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -50,6 +52,8 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/prompt-studio" element={<PromptStudio />} />
+        <Route path="/prompt-library" element={<PromptLibrary />} />
         <Route path="/multi-source" element={<MultiSource />} />
         <Route path="/structured-extraction" element={<StructuredExtraction />} />
         <Route path="/text-transform" element={<TextTransform />} />

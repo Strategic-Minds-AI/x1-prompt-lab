@@ -1,0 +1,37 @@
+{
+  "name": "PromptTemplate",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "goal": {
+      "type": "string"
+    },
+    "prompt_text": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_llm": {
+      "type": "string"
+    },
+    "quality_score": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "prompt_text"
+  ]
+}
