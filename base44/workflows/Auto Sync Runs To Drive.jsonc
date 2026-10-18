@@ -1,0 +1,41 @@
+{
+  "name": "Auto Sync Runs To Drive",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "PromptRun"
+    }
+  },
+  "description": "Automatically uploads every new prompt run (audit, simulation, optimization, QA) to Google Drive for record keeping.",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_sync_runs_to_drive",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sync_run": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "syncPromptToDrive",
+            "args": {
+              "title": "${ .trigger.data.mode // \"\" }-run-${ .trigger.entity_id }",
+              "content": "# PromptLab Run\n\n**Mode:** ${ .trigger.data.mode // \"\" }\n**Model:** ${ .trigger.data.model // \"\" }\n**Score:** ${ .trigger.data.quality_score // \"n/a\" }\n\n## Input\n\n${ .trigger.data.input // \"\" }\n\n## Output\n\n${ .trigger.data.output // \"\" }\n\n## Notes\n\n${ .trigger.data.notes // \"\" }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Sync run to Drive",
+            "description": "Upload audit/simulation report"
+          }
+        }
+      }
+    ]
+  }
+}

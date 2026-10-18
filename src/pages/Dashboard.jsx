@@ -5,6 +5,7 @@ import {
   ArrowRight, Sparkles, Zap, LinkIcon, FileUp, AlertTriangle, Ghost, TrendingUp, Bot, Target, Library
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import ModelPerformance from "@/components/ModelPerformance";
 
 const tools = [
   { path: "/chain-prompting", icon: Link2, title: "Chain Prompting", description: "Chain sequential prompts where each output feeds the next.", color: "warning" },
@@ -91,6 +92,8 @@ export default function Dashboard() {
           <span className="text-sm text-muted-foreground">{stats.runs} engineering runs</span>
         </div>
       </div>
+
+      <ModelPerformance />
 
       <div className="mb-4">
         <h2 className="text-sm font-mono text-muted-foreground uppercase tracking-widest mb-1">Tools</h2>
