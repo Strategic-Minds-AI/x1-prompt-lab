@@ -4,7 +4,7 @@ import {
   Layers, FileText, Wand2, Link2, Globe, Image, Terminal, LayoutDashboard, LinkIcon, FileUp,
   AlertTriangle, Ghost, TrendingUp, Bot, Sparkles, Library, GitCompare, Target, Plug, Compass, Cpu, Rocket, LogOut
 } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LangContext";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -66,6 +66,7 @@ const navItems = {
 export default function Layout() {
   const location = useLocation();
   const { lang } = useLang();
+  const { logout } = useAuth();
   const items = navItems[lang];
   const [agentOpen, setAgentOpen] = useState(false);
 
@@ -115,7 +116,7 @@ export default function Layout() {
           <LangToggle />
           <ThemeToggle />
           <button
-            onClick={() => base44.auth.logout()}
+            onClick={() => logout(true)}
             className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors w-full"
           >
             <LogOut className="w-4 h-4" /> Log out
