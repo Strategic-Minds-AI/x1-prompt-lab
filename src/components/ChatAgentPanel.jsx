@@ -1,21 +1,19 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Sparkles, Radio, MessageSquare, MessageCircle } from "lucide-react";
+import { X, Send, Sparkles, Radio, MessageSquare, MessageCircle, Wrench } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-
-const SYSTEM_PROMPT = `You are the PromptLab autonomous operating assistant. You follow the approved prompt library as reusable operating procedures. Preserve source truth and existing approved work. Use the narrowest applicable prompt. Do not invent company facts, customer claims, metrics, legal conclusions, or integration status. Distinguish verified facts from inference. You can help the user audit prompts, reverse-engineer goals, route tasks to the best library prompt, compare models, and manage their prompt library. You can read and post to the shared agent message bus to coordinate with other agents. Be concise, concrete, and end material work with verified results, blockers, and next actions.`;
+import ReactMarkdown from "react-markdown";
 
 const SUGGESTIONS = [
   "Route this task: build a lead-gen site for a plumber in Miami",
   "Audit my prompt for hallucination risk",
-  "What's the best prompt for executive strategy?",
-  "Compare Claude vs GPT vs Gemini",
+  "Find the best executive strategy prompt and save a refined version",
+  "Message me on WhatsApp with a summary",
 ];
 
 export default function ChatAgentPanel({ open, onClose }) {
   const [tab, setTab] = useState("chat");
-  const [messages, setMessages] = useState([
-    { role: "assistant", content: "Autonomous agent online. I can route tasks, audit prompts, reverse-engineer goals, and coordinate with other agents over the message bus. What are we building?" },
-  ]);
+  const [conversation, setConversation] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [bus, setBus] = useState([]);
@@ -23,7 +21,28 @@ export default function ChatAgentPanel({ open, onClose }) {
   const [waNote, setWaNote] = useState(null);
   const scrollRef = useRef(null);
   const busRef = useRef(null);
+  const unsubRef = useRef(null);
 
+  // Start agent conversation on first open
+  useEffect(() => {
+    if (!open || conversation) return;
+    (async () => {
+      try {
+        const conv = await base44.agents.createConversation({ agent_name: "autonomous_agent", metadata: { name: "PromptLab Agent" } });
+        setConversation(conv);
+        unsubRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
+          setMessages(data.messages || []);
+          const last = (data.messages || [])[data.messages.length - 1];
+          if (last && last.role === "assistant" && last.content) setLoading(false);
+        });
+      } catch (e) {
+        setMessages([{ role: "assistant", content: "Agent initializing — reopen the panel in a moment." }]);
+      }
+    })();
+    return () => unsubRef.current && unsubRef.current();
+  }, [open]);
+
+  // Message bus: load + subscribe
   useEffect(() => {
     let unsub;
     (async () => {
@@ -45,30 +64,17 @@ export default function ChatAgentPanel({ open, onClose }) {
     if (busRef.current) busRef.current.scrollTop = busRef.current.scrollHeight;
   }, [bus]);
 
-  const postToBus = (agent_name, role, content, target_agent = "all") => {
-    base44.entities.AgentMessage.create({ agent_name, role, content, target_agent, channel: "bus" }).catch(() => {});
-  };
-
   const send = async (text) => {
     const content = (text ?? input).trim();
-    if (!content || loading) return;
-    const next = [...messages, { role: "user", content }];
-    setMessages(next);
+    if (!content || loading || !conversation) return;
     setInput("");
     setLoading(true);
-    postToBus("user", "user", content, "chat-agent");
     try {
-      const convo = next.map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n\n");
-      const res = await base44.integrations.Core.InvokeLLM({ prompt: `${SYSTEM_PROMPT}\n\nConversation so far:\n${convo}\n\nAssistant:` });
-      const out = typeof res === "string" ? res : JSON.stringify(res);
-      setMessages((m) => [...m, { role: "assistant", content: out }]);
-      postToBus("chat-agent", "assistant", out, "all");
+      await base44.agents.addMessage(conversation, { role: "user", content });
     } catch (e) {
-      const msg = "Error: " + String(e.message || e);
-      setMessages((m) => [...m, { role: "assistant", content: msg }]);
-      postToBus("chat-agent", "assistant", msg, "all");
+      setLoading(false);
+      setMessages((m) => [...m, { role: "assistant", content: "Error: " + String(e.message || e) }]);
     }
-    setLoading(false);
   };
 
   const sendToWhatsApp = async (content) => {
@@ -86,7 +92,7 @@ export default function ChatAgentPanel({ open, onClose }) {
     const content = busInput.trim();
     if (!content) return;
     setBusInput("");
-    await postToBus("user", "user", content, "all");
+    try { await base44.entities.AgentMessage.create({ agent_name: "user", role: "user", content, target_agent: "all", channel: "bus" }); } catch {}
   };
 
   return (
@@ -98,7 +104,7 @@ export default function ChatAgentPanel({ open, onClose }) {
           </div>
           <div>
             <p className="text-sm font-semibold">Autonomous Agent</p>
-            <p className="text-[10px] text-muted-foreground font-mono">Prompt OS runtime · max autonomy</p>
+            <p className="text-[10px] text-muted-foreground font-mono">full access · library · runs · bus · WhatsApp · Drive</p>
           </div>
         </div>
         <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
@@ -116,12 +122,20 @@ export default function ChatAgentPanel({ open, onClose }) {
       {tab === "chat" && (
         <>
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+            {messages.length === 0 && !loading && (
+              <p className="text-sm text-muted-foreground text-center mt-8">Start a conversation — the agent can read/write your library, send WhatsApp, and back up to Drive on its own.</p>
+            )}
             {messages.map((m, i) => (
               <div key={i} className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
                 <div className={`max-w-[85%] px-3 py-2 rounded-lg text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground/90"}`}>
-                  {m.content}
+                  {m.role === "assistant" ? <ReactMarkdown>{m.content || ""}</ReactMarkdown> : m.content}
                 </div>
-                {m.role === "assistant" && (
+                {m.tool_calls?.map((tc, j) => (
+                  <div key={j} className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono mt-0.5">
+                    <Wrench className="w-3 h-3" /> {tc.name}: {tc.status}
+                  </div>
+                ))}
+                {m.role === "assistant" && m.content && (
                   <button onClick={() => sendToWhatsApp(m.content)} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-success font-mono mt-0.5">
                     <MessageCircle className="w-3 h-3" /> {waNote === "sending" ? "sending..." : waNote === "sent" ? "sent ✓" : waNote === "failed" ? "failed" : "WhatsApp"}
                   </button>
@@ -130,11 +144,11 @@ export default function ChatAgentPanel({ open, onClose }) {
             ))}
             {loading && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" /> Thinking...
+                <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" /> Working...
               </div>
             )}
           </div>
-          {messages.length <= 2 && (
+          {messages.length <= 1 && (
             <div className="px-4 pb-2 flex flex-wrap gap-1.5">
               {SUGGESTIONS.map((s) => (
                 <button key={s} onClick={() => send(s)} className="text-[11px] px-2 py-1 rounded-full bg-secondary text-muted-foreground hover:text-foreground hover:bg-accent/20 transition-colors">{s}</button>
@@ -146,10 +160,10 @@ export default function ChatAgentPanel({ open, onClose }) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder="Ask the agent to route, audit, or build..."
+              placeholder="Tell the agent what to do..."
               className="flex-1 bg-secondary/50 rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary"
             />
-            <button onClick={() => send()} disabled={loading} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-50">
+            <button onClick={() => send()} disabled={loading || !conversation} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-50">
               <Send className="w-4 h-4" />
             </button>
           </div>
