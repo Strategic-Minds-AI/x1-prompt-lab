@@ -1,0 +1,36 @@
+{
+  "name": "AgentMessage",
+  "type": "object",
+  "properties": {
+    "agent_name": {
+      "type": "string",
+      "description": "The agent or actor that produced this message"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "assistant",
+        "system"
+      ],
+      "default": "assistant"
+    },
+    "content": {
+      "type": "string"
+    },
+    "target_agent": {
+      "type": "string",
+      "description": "Intended recipient agent, or 'all' for broadcast",
+      "default": "all"
+    },
+    "channel": {
+      "type": "string",
+      "default": "bus"
+    }
+  },
+  "required": [
+    "agent_name",
+    "role",
+    "content"
+  ]
+}

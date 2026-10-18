@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   Layers, FileText, Wand2, Link2, Globe, Image, Terminal, LayoutDashboard, LinkIcon, FileUp,
@@ -53,6 +54,7 @@ export default function Layout() {
   const location = useLocation();
   const { lang } = useLang();
   const items = navItems[lang];
+  const [agentOpen, setAgentOpen] = useState(false);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -89,8 +91,14 @@ export default function Layout() {
           })}
         </nav>
 
-        {/* Lang + theme toggle */}
+        {/* Agent + lang + theme toggle */}
         <div className="p-3 border-t border-border space-y-2">
+          <button
+            onClick={() => setAgentOpen(true)}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm bg-primary/10 text-primary hover:bg-primary/20 transition-colors w-full font-medium"
+          >
+            <Bot className="w-4 h-4" /> Autonomous Agent
+          </button>
           <LangToggle />
           <ThemeToggle />
         </div>
@@ -100,7 +108,7 @@ export default function Layout() {
       <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
-      <ChatAgentPanel />
+      <ChatAgentPanel open={agentOpen} onClose={() => setAgentOpen(false)} />
     </div>
   );
 }
