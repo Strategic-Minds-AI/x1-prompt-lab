@@ -1,0 +1,52 @@
+{
+  "name": "LocalCommand",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Which local bridge this command is for"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "shell",
+        "scan",
+        "ingest",
+        "organize",
+        "stat"
+      ]
+    },
+    "command": {
+      "type": "string",
+      "description": "Shell command, folder path, or file path"
+    },
+    "args": {
+      "type": "object",
+      "description": "Extra args e.g. {mapping, root} for organize"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "running",
+        "done",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "output": {
+      "type": "string"
+    },
+    "result": {
+      "type": "object"
+    },
+    "error": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "session_id",
+    "type",
+    "command"
+  ]
+}

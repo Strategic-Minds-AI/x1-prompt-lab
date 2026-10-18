@@ -26,6 +26,8 @@ import PromptLibrary from './pages/PromptLibrary';
 import ModelCompare from './pages/ModelCompare';
 import VisionStudio from './pages/VisionStudio';
 import Connections from './pages/Connections';
+import Terminal from './pages/Terminal';
+import Discovery from './pages/Discovery';
 import { ThemeProvider } from '@/lib/ThemeContext';
 
 const AuthenticatedApp = () => {
@@ -61,6 +63,8 @@ const AuthenticatedApp = () => {
         <Route path="/model-compare" element={<ModelCompare />} />
         <Route path="/vision-studio" element={<VisionStudio />} />
         <Route path="/connections" element={<Connections />} />
+        <Route path="/terminal" element={<Terminal />} />
+        <Route path="/discovery" element={<Discovery />} />
         <Route path="/multi-source" element={<MultiSource />} />
         <Route path="/structured-extraction" element={<StructuredExtraction />} />
         <Route path="/text-transform" element={<TextTransform />} />

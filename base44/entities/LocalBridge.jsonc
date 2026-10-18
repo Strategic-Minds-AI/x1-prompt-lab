@@ -1,0 +1,31 @@
+{
+  "name": "LocalBridge",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Unique secret token shared between the app and the local bridge script"
+    },
+    "computer_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "online",
+        "offline"
+      ],
+      "default": "offline"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "os": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "session_id"
+  ]
+}
