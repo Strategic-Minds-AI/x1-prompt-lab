@@ -89,12 +89,12 @@ export default function Terminal() {
 
       <div className="rounded-xl border border-border bg-black/80 p-4 font-mono text-xs min-h-[300px] flex flex-col">
         <div className="flex-1 overflow-y-auto space-y-2 mb-3">
-          {history.length === 0 && <div className="text-muted-foreground">No commands yet. Type a command below.</div>}
+          {history.length === 0 && <div className="text-zinc-500">No commands yet. Type a command below.</div>}
           {history.map((h, i) => (
             <div key={i}>
               <div className="text-emerald-400">$ {h.command}</div>
               {h.status === "pending" && <div className="text-muted-foreground flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> runningâ€¦</div>}
-              {h.status !== "pending" && <pre className="text-muted-foreground whitespace-pre-wrap break-all">{h.output}</pre>}
+              {h.status !== "pending" && <pre className="text-zinc-300 whitespace-pre-wrap break-all">{h.output}</pre>}
             </div>
           ))}
         </div>
@@ -106,7 +106,7 @@ export default function Terminal() {
             onKeyDown={(e) => e.key === "Enter" && run()}
             disabled={!online || busy}
             placeholder={online ? "enter an approved command (arbitrary shell is blocked)" : "waiting for bridgeâ€¦"}
-            className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground disabled:opacity-50"
+            className="flex-1 bg-transparent outline-none text-emerald-300 placeholder:text-zinc-500 disabled:opacity-50"
           />
           <CornerDownLeft className="w-3.5 h-3.5 text-muted-foreground" />
         </div>
