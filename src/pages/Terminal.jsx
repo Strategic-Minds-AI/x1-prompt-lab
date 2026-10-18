@@ -12,7 +12,7 @@ export default function Terminal() {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
-  const appUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const appUrl = "https://prompt-lab-copy-c8730880.base44.app";
   const runCmd = `node local-bridge.mjs --app=${appUrl} --session=${sessionId || "<SESSION>"}`;
 
   const copy = () => {
