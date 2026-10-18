@@ -56,7 +56,7 @@ export default function Ollama() {
     setPullName("");
     try {
       const cmdId = await base44.functions.invoke("bridgeCommand", {
-        session_id: sessionId, type: "shell", command: `ollama pull "${name}"`,
+        session_id: sessionId, type: "operation", command: "ollama.pull", args: { model: name },
       });
       let done = false, attempts = 0;
       while (!done && attempts < 120) {
@@ -79,10 +79,10 @@ export default function Ollama() {
   };
 
   const removeModel = async (name) => {
-    if (!online) return;
+    if (!online || !window.confirm(`Remove local Ollama model "${name}"? This deletes the model from this computer.`)) return;
     try {
       const cmdId = await base44.functions.invoke("bridgeCommand", {
-        session_id: sessionId, type: "shell", command: `ollama rm "${name}"`,
+        session_id: sessionId, type: "operation", command: "ollama.remove", args: { model: name, confirm: true },
       });
       let done = false, attempts = 0;
       while (!done && attempts < 30) {

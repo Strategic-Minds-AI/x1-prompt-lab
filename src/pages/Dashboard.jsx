@@ -17,15 +17,15 @@ export default function Dashboard() {
   const [activity, setActivity] = useState([]);
   const [counts, setCounts] = useState({ commands: 0, templates: 0, runs: 0 });
 
-  const runShell = useCallback(async (command) => {
+  const runOperation = useCallback(async (operation) => {
     if (!sessionId || !online) return null;
-    const cmdId = await base44.functions.invoke("bridgeCommand", { session_id: sessionId, type: "shell", command });
+    const queued = await base44.functions.invoke("bridgeCommand", { session_id: sessionId, type: "operation", command: operation });
     let attempts = 0;
     while (attempts < 30) {
       await new Promise((r) => setTimeout(r, 1000));
-      const { items } = await base44.entities.LocalCommand.filter({ id: cmdId.data?.command_id }, { limit: 1 });
-      const c = items[0];
-      if (c && (c.status === "done" || c.status === "failed")) return c;
+      const { items } = await base44.entities.LocalCommand.filter({ id: queued.data?.command_id }, { limit: 1 });
+      const command = items[0];
+      if (command && (command.status === "done" || command.status === "failed")) return command;
       attempts++;
     }
     return null;
@@ -47,7 +47,7 @@ export default function Dashboard() {
     } catch { setOllama({ status: "offline", models: 0 }); }
 
     try {
-      const c = await runShell("docker ps -a --format '{{.Names}}\t{{.Status}}'");
+      const c = await runOperation("docker.list");
       if (c && c.status === "done") {
         const lines = (c.output || "").split("\n").filter(Boolean);
         const running = lines.filter((l) => l.includes("Up")).length;
@@ -56,13 +56,13 @@ export default function Dashboard() {
     } catch { setDocker({ status: "offline", containers: 0, running: 0 }); }
 
     try {
-      const c = await runShell("df -h / --output size,used,pcent 2>/dev/null | tail -1");
+      const c = await runOperation("disk.usage");
       if (c && c.status === "done") {
         const parts = (c.output || "").trim().split(/\s+/);
         setDisk({ status: "online", total: parts[0] || "—", used: parts[1] || "—", pcent: parts[2] || "" });
       } else setDisk({ status: "offline", total: "", used: "", pcent: "" });
     } catch { setDisk({ status: "offline", total: "", used: "", pcent: "" }); }
-  }, [sessionId, online, runShell]);
+  }, [sessionId, online, runOperation]);
 
   useEffect(() => { probe(); }, [probe]);
   useEffect(() => {

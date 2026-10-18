@@ -1,0 +1,46 @@
+name: Prompt Lab Bridge Safety Contract
+
+on:
+  pull_request:
+    paths:
+      - "base44/shared/bridge-contract.js"
+      - "base44/functions/bridgeCommand/**"
+      - "base44/functions/bridgePoll/**"
+      - "base44/functions/bridgeProxy/**"
+      - "base44/functions/bridgeResult/**"
+      - "base44/functions/bridgeStatus/**"
+      - "public/local-bridge.mjs"
+      - "src/pages/Dashboard.jsx"
+      - "src/pages/Discovery.jsx"
+      - "src/pages/Ollama.jsx"
+      - "src/pages/Terminal.jsx"
+      - "tests/**"
+      - "package.json"
+  push:
+    branches:
+      - "feature/x1-authority-boundary-20261018"
+    paths:
+      - "base44/shared/bridge-contract.js"
+      - "base44/functions/bridgeCommand/**"
+      - "base44/functions/bridgePoll/**"
+      - "base44/functions/bridgeProxy/**"
+      - "base44/functions/bridgeResult/**"
+      - "base44/functions/bridgeStatus/**"
+      - "public/local-bridge.mjs"
+      - "src/pages/Dashboard.jsx"
+      - "src/pages/Discovery.jsx"
+      - "src/pages/Ollama.jsx"
+      - "src/pages/Terminal.jsx"
+      - "tests/**"
+      - "package.json"
+
+jobs:
+  bridge-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run test:bridge
+      - run: node --check public/local-bridge.mjs

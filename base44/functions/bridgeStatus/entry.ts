@@ -5,6 +5,8 @@ export default async function(req) {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+
     const body = await req.json();
     const { items } = await base44.entities.LocalBridge.filter({ session_id: body.session_id }, { limit: 1 });
     const bridge = items[0];
@@ -15,8 +17,8 @@ export default async function(req) {
       { session_id: body.session_id },
       { sort: '-created_date', limit: 20 }
     );
-    return Response.json({ online, bridge, commands: cmds });
+    return Response.json({ online, bridge: { ...bridge, session_id: undefined }, commands: cmds });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Unable to read local bridge status' }, { status: 500 });
   }
 }

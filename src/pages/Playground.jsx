@@ -3,7 +3,6 @@ import { Terminal, Play, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ExerciseHeader from "../components/ExerciseHeader";
 import ResultPanel from "../components/ResultPanel";
