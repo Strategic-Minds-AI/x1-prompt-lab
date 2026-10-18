@@ -113,17 +113,14 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
-    if (!shouldRedirect) {
-      base44.auth.logout();
-      return;
-    }
-    // Clear the session cookie via the server logout endpoint, then land on the
-    // login page (not back here) so the user actually sees the login screen.
+    // Clear the local session token so the app treats the user as signed out,
+    // then send them to the platform login page.
     try {
-      const loginUrl = `/login?from_url=${encodeURIComponent(window.location.href)}`;
-      base44.auth.logout(loginUrl);
-    } catch (e) {
-      base44.auth.logout();
+      window.localStorage.removeItem("base44_access_token");
+      window.localStorage.removeItem("token");
+    } catch (e) { /* ignore */ }
+    if (shouldRedirect) {
+      base44.auth.redirectToLogin(window.location.href);
     }
   };
 
