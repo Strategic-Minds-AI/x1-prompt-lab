@@ -6,6 +6,9 @@ import os from 'node:os';
 
 const args = process.argv.slice(2);
 function arg(k) {
+  const prefix = '--' + k + '=';
+  const eq = args.find(a => a.startsWith(prefix));
+  if (eq) return eq.slice(prefix.length);
   const i = args.indexOf('--' + k);
   if (i >= 0 && args[i + 1]) return args[i + 1];
   const envKey = k.toUpperCase().replace(/-/g, '_');
