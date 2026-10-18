@@ -27,6 +27,7 @@ import ModelCompare from './pages/ModelCompare';
 import VisionStudio from './pages/VisionStudio';
 import Connections from './pages/Connections';
 import Terminal from './pages/Terminal';
+import Ollama from './pages/Ollama';
 import Discovery from './pages/Discovery';
 import OAuthConsent from './pages/OAuthConsent';
 import { ThemeProvider } from '@/lib/ThemeContext';
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
         <Route path="/vision-studio" element={<VisionStudio />} />
         <Route path="/connections" element={<Connections />} />
         <Route path="/terminal" element={<Terminal />} />
+        <Route path="/ollama" element={<Ollama />} />
         <Route path="/discovery" element={<Discovery />} />
         <Route path="/multi-source" element={<MultiSource />} />
         <Route path="/structured-extraction" element={<StructuredExtraction />} />
